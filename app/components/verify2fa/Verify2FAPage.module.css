@@ -1,0 +1,139 @@
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.brandName {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.iconWrap {
+  width: 56px;
+  height: 56px;
+  background: #eef2ff;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4f46e5;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 0.93rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  min-height: 3em;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.backupInput {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.backupInput:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background: #ffffff;
+}
+
+.backupInput::placeholder {
+  color: #9ca3af;
+  letter-spacing: normal;
+}
+
+.errorText {
+  font-size: 0.85rem;
+  color: #ef4444;
+  text-align: center;
+  margin-top: -8px;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 13px;
+  background: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #4338ca;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.toggleMode {
+  display: block;
+  margin: 20px auto 0;
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.toggleMode:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.backLink {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #4f46e5;
+}

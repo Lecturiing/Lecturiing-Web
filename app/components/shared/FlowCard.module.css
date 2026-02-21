@@ -1,0 +1,24 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(140deg, #eef2ff 0%, #faf5ff 60%, #f0fdf4 100%);
+  padding: 24px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 44px 40px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 8px 48px rgba(79, 70, 229, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 32px 24px;
+    border-radius: 16px;
+  }
+}

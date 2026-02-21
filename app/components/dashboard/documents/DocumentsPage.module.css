@@ -1,0 +1,72 @@
+.page { display: flex; flex-direction: column; gap: 20px; max-width: 960px; }
+
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.title { font-size: 1.1rem; font-weight: 800; color: #111827; margin: 0 0 4px; }
+.subtitle { font-size: 0.82rem; color: #6b7280; margin: 0; max-width: 520px; line-height: 1.4; }
+.uploadBtn { background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 10px 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.15s; }
+.uploadBtn:hover { background: #4338ca; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tab { background: none; border: none; padding: 7px 13px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+.tab:hover { background: #f3f4f6; color: #111827; }
+.tabActive { background: #ede9fe; color: #4f46e5; }
+.tabCount { background: #e5e7eb; color: #6b7280; font-size: 0.7rem; padding: 1px 6px; border-radius: 20px; }
+.tabActive .tabCount { background: #ddd6fe; color: #4f46e5; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.empty { color: #9ca3af; font-size: 0.88rem; grid-column: 1/-1; }
+
+/* Card */
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s, border-color 0.15s; }
+.card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); border-color: #c4b5fd; }
+.cardTop { display: flex; align-items: center; justify-content: space-between; }
+.docIconWrap { width: 40px; height: 40px; background: #f5f3ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4f46e5; }
+.catBadge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.docTitle { font-size: 0.92rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.3; }
+.docDesc { font-size: 0.78rem; color: #6b7280; line-height: 1.4; margin: 0; flex: 1; }
+.docMeta { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #9ca3af; }
+.cardActions { display: flex; gap: 8px; }
+.previewBtn { flex: 1; background: #ede9fe; color: #4f46e5; border: none; border-radius: 7px; padding: 7px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.previewBtn:hover { background: #ddd6fe; }
+.deleteBtn { background: #fee2e2; color: #dc2626; border: none; border-radius: 7px; padding: 7px 10px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.deleteBtn:hover { background: #fecaca; }
+
+/* Modal base */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 0; flex-shrink: 0; }
+.modalTitle { font-size: 1rem; font-weight: 800; color: #111827; margin: 0; }
+.modalClose { background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.modalClose:hover { background: #e5e7eb; }
+.modalBody { padding: 16px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.modalFooter { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid #f3f4f6; flex-shrink: 0; }
+.modalCancel { flex: 1; background: #f3f4f6; color: #374151; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.modalCancel:hover { background: #e5e7eb; }
+.modalSave { flex: 2; background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.15s, opacity 0.15s; }
+.modalSave:hover:not(:disabled) { background: #4338ca; }
+.modalSave:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Preview */
+.previewMeta { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #9ca3af; }
+.previewDesc { font-size: 0.85rem; color: #374151; line-height: 1.5; margin: 0; }
+.previewDoc { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+.previewDocHeader { background: #f5f3ff; padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+.previewDocTitle { font-size: 0.95rem; font-weight: 700; color: #1e1b4b; margin: 0 0 2px; }
+.previewDocSub { font-size: 0.72rem; color: #6b7280; margin: 0; }
+.previewDocBody { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; color: #374151; line-height: 1.5; }
+.previewEllipsis { color: #9ca3af; font-style: italic; font-size: 0.78rem; }
+.previewSignatureRow { display: flex; gap: 24px; padding: 16px 18px; border-top: 1px solid #f3f4f6; }
+.sigBlock { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 0.72rem; color: #6b7280; }
+.sigLine { height: 1px; background: #374151; width: 100%; }
+
+/* Upload form */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.fieldLabel { font-size: 0.82rem; font-weight: 600; color: #374151; }
+.fieldInput { padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; color: #111827; outline: none; font-family: inherit; transition: border-color 0.15s; }
+.fieldInput:focus { border-color: #4f46e5; }
+.fieldTextarea { padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; color: #111827; outline: none; font-family: inherit; resize: vertical; transition: border-color 0.15s; }
+.fieldTextarea:focus { border-color: #4f46e5; }
+.uploadDropzone { border: 2px dashed #d1d5db; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.82rem; color: #6b7280; text-align: center; }
+.uploadNote { font-size: 0.72rem; color: #9ca3af; }

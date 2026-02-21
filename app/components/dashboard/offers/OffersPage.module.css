@@ -1,0 +1,93 @@
+.page { display: flex; flex-direction: column; gap: 20px; max-width: 860px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tab { background: none; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.83rem; font-weight: 600; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s, color 0.15s; }
+.tab:hover { background: #f3f4f6; color: #111827; }
+.tabActive { background: #ede9fe; color: #4f46e5; }
+.tabCount { background: #e5e7eb; color: #6b7280; font-size: 0.72rem; padding: 1px 7px; border-radius: 20px; }
+.tabActive .tabCount { background: #ddd6fe; color: #4f46e5; }
+
+/* List */
+.list { display: flex; flex-direction: column; gap: 16px; }
+.empty { font-size: 0.88rem; color: #9ca3af; text-align: center; padding: 40px 0; }
+
+/* Card */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.15s;
+}
+
+/* Card Header */
+.cardHeader { display: flex; align-items: flex-start; gap: 14px; }
+.avatar { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.92rem; font-weight: 700; flex-shrink: 0; }
+.cardInfo { flex: 1; min-width: 0; }
+.cardName { font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0 0 2px; }
+.cardJob { font-size: 0.82rem; color: #4f46e5; font-weight: 600; margin: 0 0 4px; }
+.cardMeta { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #9ca3af; }
+.cardRight { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.statusBadge { font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+.offeredDate { font-size: 0.72rem; color: #9ca3af; }
+
+/* Response Box */
+.responseBox { border-radius: 10px; padding: 14px 16px; }
+.responseLabel { font-size: 0.88rem; font-weight: 700; color: #374151; margin: 0 0 4px; }
+.responseNote { font-size: 0.8rem; color: #6b7280; margin: 0 0 12px; line-height: 1.4; }
+.responseActions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.simulateNote { font-size: 0.72rem; color: #9ca3af; font-style: italic; flex-shrink: 0; }
+
+.approveBtn { background: #d1fae5; color: #059669; border: none; border-radius: 7px; padding: 7px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.approveBtn:hover { background: #a7f3d0; }
+.declineBtn { background: #fee2e2; color: #dc2626; border: none; border-radius: 7px; padding: 7px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.declineBtn:hover { background: #fecaca; }
+
+/* Contract Section */
+.contractSection { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; background: #fafafa; }
+.contractHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.contractTitle { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 700; color: #111827; }
+.contractIcon { font-size: 1rem; }
+
+.sendDocsBtn { background: #4f46e5; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.sendDocsBtn:hover { background: #4338ca; }
+
+.sentBadge { font-size: 0.78rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 4px 12px; border-radius: 20px; }
+
+.docList { display: flex; flex-direction: column; gap: 8px; }
+.docRow { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; }
+.docName { font-size: 0.83rem; color: #374151; font-weight: 500; }
+.docStatus { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.docSigned { background: #d1fae5; color: #059669; }
+.docPending { background: #fef3c7; color: #d97706; }
+
+.noDocsNote { font-size: 0.8rem; color: #9ca3af; margin: 0; }
+
+/* Modal */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 0; }
+.modalTitle { font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0; }
+.modalClose { background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.modalClose:hover { background: #e5e7eb; }
+.modalSub { font-size: 0.85rem; color: #6b7280; margin: 8px 24px 16px; }
+
+.modalDocList { overflow-y: auto; padding: 0 24px 16px; display: flex; flex-direction: column; gap: 10px; }
+.modalDocRow { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.modalDocRow:hover { border-color: #c4b5fd; background: #fafafa; }
+.modalDocSelected { border-color: #4f46e5; background: #faf5ff; }
+.modalCheckbox { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; accent-color: #4f46e5; cursor: pointer; }
+.modalDocInfo { flex: 1; min-width: 0; }
+.modalDocTitle { font-size: 0.88rem; font-weight: 700; color: #111827; margin: 0 0 3px; }
+.modalDocMeta { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+
+.modalFooter { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid #f3f4f6; }
+.modalCancel { flex: 1; background: #f3f4f6; color: #374151; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.modalCancel:hover { background: #e5e7eb; }
+.modalSend { flex: 2; background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.15s, opacity 0.15s; }
+.modalSend:hover:not(:disabled) { background: #4338ca; }
+.modalSend:disabled { opacity: 0.45; cursor: not-allowed; }

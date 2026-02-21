@@ -1,0 +1,150 @@
+.page {
+  min-height: 100vh;
+  background: #f8f9fb;
+}
+
+/* ---- Header ---- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f5;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandName {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.headerNav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.signOutLink {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.signOutLink:hover {
+  color: #ef4444;
+}
+
+/* ---- Main ---- */
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+/* ---- Greet card ---- */
+
+.greetCard {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.greetIconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: #eef2ff;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.greetTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.greetSubtitle {
+  font-size: 1.05rem;
+  color: #6b7280;
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ---- Cards ---- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #f0f0f5;
+  border-radius: 16px;
+  padding: 28px 24px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2px);
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    padding: 0 20px;
+  }
+
+  .greetTitle {
+    font-size: 2.2rem;
+  }
+}

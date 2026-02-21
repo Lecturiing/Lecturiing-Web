@@ -1,0 +1,61 @@
+.page { display: flex; flex-direction: column; gap: 24px; }
+
+/* Banner */
+.banner { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 16px; padding: 20px 24px; color: white; gap: 16px; flex-wrap: wrap; }
+.bannerLeft { display: flex; align-items: center; gap: 14px; }
+.bannerBadge { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.bannerTitle { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+.bannerSub { font-size: 0.82rem; opacity: 0.8; }
+.bannerBtn { background: white; color: #4f46e5; font-weight: 600; font-size: 0.85rem; padding: 9px 18px; border-radius: 10px; text-decoration: none; white-space: nowrap; transition: opacity 0.15s; }
+.bannerBtn:hover { opacity: 0.9; }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.statCard { display: flex; align-items: center; gap: 14px; background: white; border: 1px solid #eef0f4; border-radius: 14px; padding: 18px 20px; text-decoration: none; transition: box-shadow 0.2s, transform 0.2s; }
+.statCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); transform: translateY(-2px); }
+.statIcon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.statValue { font-size: 1.6rem; font-weight: 800; color: #111827; line-height: 1; margin-bottom: 2px; }
+.statLabel { font-size: 0.78rem; color: #6b7280; font-weight: 500; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* Section */
+.section { background: white; border: 1px solid #eef0f4; border-radius: 16px; padding: 22px 24px; }
+.sectionHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.sectionTitle { font-size: 0.95rem; font-weight: 700; color: #111827; margin-bottom: 16px; }
+.seeAll { font-size: 0.82rem; color: #4f46e5; text-decoration: none; font-weight: 500; }
+.seeAll:hover { text-decoration: underline; }
+
+/* Quick actions */
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.actionCard { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; text-decoration: none; color: #374151; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+.actionCard:hover { background: #f3f4f6; border-color: #d1d5db; }
+.actionIcon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Activity */
+.activityList { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.activityItem { display: flex; align-items: flex-start; gap: 12px; }
+.activityDot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.activityText { font-size: 0.85rem; color: #374151; line-height: 1.4; }
+.activityTime { font-size: 0.78rem; color: #9ca3af; margin-top: 2px; }
+
+/* Job table */
+.jobTable { display: flex; flex-direction: column; gap: 0; }
+.jobTableHead { display: grid; grid-template-columns: 2fr 1fr 80px 100px 90px; gap: 12px; padding: 8px 12px; font-size: 0.75rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #f0f0f5; }
+.jobTableRow { display: grid; grid-template-columns: 2fr 1fr 80px 100px 90px; gap: 12px; align-items: center; padding: 12px; font-size: 0.85rem; color: #374151; border-bottom: 1px solid #f9fafb; transition: background 0.1s; }
+.jobTableRow:hover { background: #fafafa; }
+.jobTableRow:last-child { border-bottom: none; }
+.jobTitle { font-weight: 500; color: #111827; }
+.jobField { color: #6b7280; }
+
+@media (max-width: 1024px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .jobTableHead, .jobTableRow { grid-template-columns: 2fr 1fr 80px; }
+  .jobTableHead span:nth-child(4), .jobTableHead span:nth-child(5),
+  .jobTableRow span:nth-child(4), .jobTableRow span:nth-child(5) { display: none; }
+}

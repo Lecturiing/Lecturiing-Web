@@ -1,0 +1,47 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+.list { display: flex; flex-direction: column; gap: 12px; }
+.card { background: white; border: 1px solid #eef0f4; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; transition: box-shadow 0.2s; }
+.card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.cardLeft { display: flex; align-items: center; gap: 14px; flex: 1; }
+.avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+.cardName { font-size: 0.95rem; font-weight: 700; color: #111827; }
+.cardJob { font-size: 0.82rem; color: #6b7280; margin-top: 2px; }
+.cardDates { font-size: 0.78rem; color: #9ca3af; margin-top: 4px; }
+.cardRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.cardAmount { font-size: 1.1rem; font-weight: 700; color: #111827; }
+.statusBadge { padding: 3px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.escrowStatus { font-size: 0.78rem; font-weight: 500; }
+.cardActions { display: flex; gap: 8px; }
+.btnView { padding: 7px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px; background: white; font-size: 0.8rem; font-weight: 500; color: #374151; cursor: pointer; transition: border-color 0.15s; }
+.btnView:hover { border-color: #4f46e5; color: #4f46e5; }
+.btnEscrow { padding: 7px 14px; background: #4f46e5; border: none; border-radius: 8px; color: white; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.btnEscrow:hover { background: #4338ca; }
+.btnRelease { padding: 7px 14px; background: #059669; border: none; border-radius: 8px; color: white; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.btnRelease:hover { background: #047857; }
+/* Modal */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.modal { background: white; border-radius: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.modalHeader { display: flex; justify-content: space-between; align-items: center; }
+.modalTitle { font-size: 1.1rem; font-weight: 700; color: #111827; }
+.modalClose { background: #f3f4f6; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; color: #6b7280; }
+.contractText { font-family: 'Courier New', monospace; font-size: 0.82rem; color: #374151; line-height: 1.7; white-space: pre-wrap; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; }
+.modalFooter { display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid #f0f0f5; }
+.btnDownload { padding: 10px 18px; border: 1.5px solid #e5e7eb; border-radius: 10px; background: white; font-size: 0.88rem; font-weight: 500; color: #374151; cursor: pointer; }
+.btnSend { padding: 10px 18px; background: #4f46e5; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 600; color: white; cursor: pointer; }
+/* Escrow */
+.escrowStep { display: flex; flex-direction: column; gap: 16px; align-items: center; text-align: center; padding: 12px 0; }
+.escrowIcon { width: 64px; height: 64px; background: #eef2ff; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #4f46e5; }
+.escrowTitle { font-size: 1.1rem; font-weight: 700; color: #111827; }
+.escrowSub { font-size: 0.88rem; color: #6b7280; }
+.escrowList { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem; color: #374151; line-height: 1.5; background: #f9fafb; border-radius: 12px; padding: 16px 20px; width: 100%; }
+.amountRow { display: flex; align-items: center; gap: 8px; }
+.currency { font-size: 1rem; font-weight: 600; color: #6b7280; }
+.amountInput { padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 1.2rem; font-weight: 700; color: #111827; width: 160px; text-align: center; outline: none; }
+.amountInput:focus { border-color: #4f46e5; }
+.escrowNote { font-size: 0.78rem; color: #9ca3af; }
+.escrowSummary { width: 100%; background: #f9fafb; border-radius: 12px; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+.escrowSummary div { display: flex; justify-content: space-between; font-size: 0.88rem; color: #374151; }
+.total { font-weight: 700 !important; color: #111827 !important; border-top: 1px solid #e5e7eb; padding-top: 8px; margin-top: 4px; }
+.btnEscrowNext { background: #4f46e5; color: white; border: none; padding: 12px 28px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+.btnEscrowNext:hover { background: #4338ca; }
+.escrowSuccess { width: 64px; height: 64px; background: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #059669; }

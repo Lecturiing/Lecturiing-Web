@@ -1,0 +1,240 @@
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.brandName {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Step indicator ---- */
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.step {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.step.active {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.step.done {
+  border-color: #10b981;
+  background: #10b981;
+  color: #ffffff;
+}
+
+.stepLine {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+/* ---- Icon ---- */
+
+.iconWrap {
+  width: 56px;
+  height: 56px;
+  background: #eef2ff;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4f46e5;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* ---- QR Section ---- */
+
+.qrSection {
+  margin-bottom: 28px;
+}
+
+.stepLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.qrFrame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.qrContainer {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.qrSvg {
+  width: 160px;
+  height: 160px;
+  display: block;
+}
+
+.qrHint {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* ---- Secret key ---- */
+
+.secretRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.secretLabel {
+  font-size: 0.83rem;
+  color: #6b7280;
+}
+
+.secretBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.secretCode {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4f46e5;
+  letter-spacing: 0.08em;
+}
+
+.copyBtn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: color 0.15s;
+}
+
+.copyBtn:hover {
+  color: #4f46e5;
+}
+
+/* ---- Verify Section ---- */
+
+.verifySection {
+  margin-bottom: 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.errorText {
+  font-size: 0.85rem;
+  color: #ef4444;
+  text-align: center;
+  margin-top: -4px;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 13px;
+  background: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #4338ca;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+/* ---- Back link ---- */
+
+.backLink {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #4f46e5;
+}

@@ -1,0 +1,89 @@
+.page { display: flex; flex-direction: column; gap: 20px; max-width: 860px; }
+
+/* Summary */
+.summary { display: flex; gap: 14px; flex-wrap: wrap; }
+.summaryCard { flex: 1; min-width: 120px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
+.summaryNum { font-size: 1.6rem; font-weight: 800; color: #4f46e5; }
+.summaryLabel { font-size: 0.78rem; color: #6b7280; font-weight: 500; }
+
+/* List */
+.list { display: flex; flex-direction: column; gap: 12px; }
+.empty { text-align: center; padding: 40px; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; color: #6b7280; font-size: 0.88rem; }
+.emptyNote { font-size: 0.78rem; color: #9ca3af; margin: 4px 0 0; }
+
+/* Card */
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; transition: border-color 0.15s; }
+.card:hover { border-color: #c4b5fd; }
+.cardOpen { border-color: #4f46e5; }
+
+/* Card Header */
+.cardHeader { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; cursor: pointer; }
+.avatar { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.95rem; font-weight: 700; flex-shrink: 0; }
+.headerInfo { flex: 1; min-width: 0; }
+.headerTop { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; flex-wrap: wrap; }
+.lecturerName { font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0; }
+.statusBadge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.jobTitle { font-size: 0.82rem; color: #4f46e5; font-weight: 600; margin: 0 0 6px; }
+.metaRow { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #6b7280; flex-wrap: wrap; }
+.rateChip { color: #111827; font-weight: 700; }
+.headerRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.signedCount { display: flex; flex-direction: column; align-items: center; }
+.signedNum { font-size: 1.2rem; font-weight: 800; color: #059669; line-height: 1; }
+.signedLabel { font-size: 0.68rem; color: #6b7280; }
+.chevron { font-size: 0.65rem; color: #9ca3af; }
+
+/* Expanded */
+.expandedBody { border-top: 1px solid #f3f4f6; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+/* Terms */
+.sectionTitle { font-size: 0.88rem; font-weight: 700; color: #374151; margin: 0 0 12px; }
+.termsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.termItem { display: flex; flex-direction: column; gap: 3px; }
+.termLabel { font-size: 0.72rem; color: #9ca3af; font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
+.termValue { font-size: 0.88rem; color: #111827; font-weight: 600; }
+
+/* Signed docs */
+.docList { display: flex; flex-direction: column; gap: 8px; }
+.docRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fafafa; }
+.docLeft { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.docIcon { color: #4f46e5; flex-shrink: 0; }
+.docName { font-size: 0.85rem; font-weight: 600; color: #111827; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.docMeta { font-size: 0.72rem; color: #9ca3af; margin: 0; }
+.docRight { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.signedBadge { font-size: 0.72rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 10px; border-radius: 20px; }
+.viewDocBtn { background: #ede9fe; color: #4f46e5; border: none; border-radius: 7px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.viewDocBtn:hover { background: #ddd6fe; }
+
+/* Modal */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
+.modalHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 0; flex-shrink: 0; }
+.modalTitle { font-size: 1rem; font-weight: 800; color: #111827; margin: 0 0 3px; }
+.modalSub { font-size: 0.78rem; color: #059669; font-weight: 600; margin: 0; }
+.modalClose { background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.modalClose:hover { background: #e5e7eb; }
+.modalBody { padding: 16px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.modalFooter { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid #f3f4f6; flex-shrink: 0; }
+.downloadBtn { flex: 2; background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+.downloadBtn:hover { background: #4338ca; }
+.modalClose2 { flex: 1; background: #f3f4f6; color: #374151; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.modalClose2:hover { background: #e5e7eb; }
+
+/* Signed Stamp */
+.signedStamp { display: flex; align-items: center; gap: 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px 16px; }
+.stampIcon { width: 32px; height: 32px; background: #059669; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+.stampTitle { font-size: 0.88rem; font-weight: 700; color: #059669; margin: 0 0 2px; }
+.stampSub { font-size: 0.78rem; color: #065f46; margin: 0; }
+
+/* Preview doc */
+.previewDoc { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+.previewDocHeader { background: #f5f3ff; padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+.previewDocTitle { font-size: 0.95rem; font-weight: 700; color: #1e1b4b; margin: 0 0 2px; }
+.previewDocSub { font-size: 0.72rem; color: #6b7280; margin: 0; }
+.previewDocBody { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; color: #374151; line-height: 1.5; }
+.previewEllipsis { color: #9ca3af; font-style: italic; font-size: 0.78rem; }
+.signatureSection { display: flex; gap: 24px; padding: 16px 18px; border-top: 1px solid #f3f4f6; }
+.sigBlock { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.sigSigned { font-size: 0.82rem; font-weight: 700; color: #059669; border-bottom: 2px solid #059669; padding-bottom: 6px; font-style: italic; }
+.sigLabel { font-size: 0.72rem; color: #6b7280; margin: 0; }
+.sigDate { font-size: 0.68rem; color: #9ca3af; margin: 0; }

@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.formColumn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 64px;
+  background: #ffffff;
+}
+
+.imageColumn {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .imageColumn {
+    display: none;
+  }
+
+  .formColumn {
+    padding: 40px 24px;
+  }
+}
