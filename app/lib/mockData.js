@@ -9,6 +9,8 @@ export const MOCK_LECTURERS = [
     specializations: ['Machine Learning', 'Data Science', 'Python'],
     bio: 'Award-winning educator with 12 years in academia. Published researcher in ML and NLP with a passion for bridging theory and practice.',
     shortlisted: true,
+    accountStatus: 'active', approvalStatus: 'approved', joinedAt: '2025-08-15',
+    email: 'amara.osei@lecturiing.com', phone: '+233 24 555 0001',
   },
   {
     id: '2', name: 'Prof. Lena Müller', initials: 'LM', color: '#7c3aed',
@@ -19,6 +21,8 @@ export const MOCK_LECTURERS = [
     specializations: ['Strategic Management', 'Finance', 'Entrepreneurship'],
     bio: 'Senior professor with two decades of international teaching. Consulted for Fortune 500 firms and authored three textbooks.',
     shortlisted: false,
+    accountStatus: 'active', approvalStatus: 'approved', joinedAt: '2025-07-20',
+    email: 'lena.muller@lecturiing.com', phone: '+49 30 555 0002',
   },
   {
     id: '3', name: 'Mr. James Kariuki', initials: 'JK', color: '#059669',
@@ -29,6 +33,8 @@ export const MOCK_LECTURERS = [
     specializations: ['Structural Analysis', 'AutoCAD', 'Project Management'],
     bio: 'Practicing civil engineer and part-time lecturer. Brings real-world project experience into the classroom.',
     shortlisted: true,
+    accountStatus: 'active', approvalStatus: 'approved', joinedAt: '2025-09-10',
+    email: 'james.kariuki@lecturiing.com', phone: '+254 20 555 0003',
   },
   {
     id: '4', name: 'Dr. Priya Sharma', initials: 'PS', color: '#d97706',
@@ -39,6 +45,9 @@ export const MOCK_LECTURERS = [
     specializations: ['Calculus', 'Statistics', 'Linear Algebra'],
     bio: 'Research mathematician with a gift for making complex concepts accessible. Experienced in online and hybrid teaching.',
     shortlisted: false,
+    accountStatus: 'suspended', approvalStatus: 'approved', joinedAt: '2025-10-01',
+    email: 'priya.sharma@lecturiing.com', phone: '+91 22 555 0004',
+    suspensionReason: 'Multiple complaints about missed classes',
   },
   {
     id: '5', name: 'Dr. Sofia Andrade', initials: 'SA', color: '#be185d',
@@ -49,6 +58,8 @@ export const MOCK_LECTURERS = [
     specializations: ['Postcolonial Studies', 'Creative Writing', 'Linguistics'],
     bio: 'Published author and educator specialising in Latin American literature and creative writing workshops.',
     shortlisted: false,
+    accountStatus: 'active', approvalStatus: 'approved', joinedAt: '2025-11-05',
+    email: 'sofia.andrade@lecturiing.com', phone: '+55 11 555 0005',
   },
   {
     id: '6', name: 'Mr. Kwame Asante', initials: 'KA', color: '#0891b2',
@@ -59,6 +70,20 @@ export const MOCK_LECTURERS = [
     specializations: ['UI/UX Design', 'Adobe Suite', 'Brand Identity'],
     bio: 'Award-winning graphic designer transitioning into education. Expert in industry tools and design thinking methodology.',
     shortlisted: false,
+    accountStatus: 'active', approvalStatus: 'pending', joinedAt: '2026-02-20',
+    email: 'kwame.asante@lecturiing.com', phone: '+233 24 555 0006',
+  },
+  {
+    id: '7', name: 'Dr. Chen Wei', initials: 'CW', color: '#dc2626',
+    title: 'Professor of Computer Engineering',
+    field: 'Engineering', qualification: 'PhD', experience: 15,
+    country: 'China', timezone: 'GMT+8', rate: 95, currency: 'USD',
+    rating: 0, reviews: 0, availability: 'Full-time',
+    specializations: ['Embedded Systems', 'IoT', 'Robotics'],
+    bio: 'Leading researcher in embedded systems and IoT. Published 50+ papers in top-tier conferences.',
+    shortlisted: false,
+    accountStatus: 'active', approvalStatus: 'pending', joinedAt: '2026-02-22',
+    email: 'chen.wei@lecturiing.com', phone: '+86 10 555 0007',
   },
 ];
 
@@ -397,6 +422,52 @@ export const MOCK_HIRED = [
   },
 ];
 
+// ─── Institution-Lecturer Assignments ─────────────────────────────────────────
+export const MOCK_INSTITUTION_LECTURERS = {
+  'inst1': [ // African Institute of Technology
+    { lecturerId: '1', hoursThisMonth: 120, status: 'active', hiredDate: '2025-09-01' },
+    { lecturerId: '3', hoursThisMonth: 80, status: 'active', hiredDate: '2025-10-15' },
+    { lecturerId: '4', hoursThisMonth: 95, status: 'active', hiredDate: '2025-11-01' },
+  ],
+  'inst2': [ // Berlin Business School
+    { lecturerId: '2', hoursThisMonth: 160, status: 'active', hiredDate: '2025-08-20' },
+    { lecturerId: '5', hoursThisMonth: 140, status: 'active', hiredDate: '2025-09-10' },
+  ],
+  'inst3': [ // Nairobi College of Engineering
+    { lecturerId: '3', hoursThisMonth: 100, status: 'active', hiredDate: '2025-10-05' },
+    { lecturerId: '6', hoursThisMonth: 75, status: 'active', hiredDate: '2025-11-12' },
+  ],
+  'inst4': [ // Mumbai Institute of Mathematics
+    { lecturerId: '4', hoursThisMonth: 60, status: 'active', hiredDate: '2026-01-20' },
+  ],
+  'inst5': [ // São Paulo Arts Academy
+    { lecturerId: '5', hoursThisMonth: 110, status: 'active', hiredDate: '2025-12-01' },
+    { lecturerId: '6', hoursThisMonth: 85, status: 'active', hiredDate: '2025-12-15' },
+  ],
+  'inst6': [], // Lagos Digital Academy (suspended)
+  'inst7': [ // Toronto Tech Institute
+    { lecturerId: '1', hoursThisMonth: 155, status: 'active', hiredDate: '2025-07-25' },
+    { lecturerId: '2', hoursThisMonth: 145, status: 'active', hiredDate: '2025-08-01' },
+    { lecturerId: '4', hoursThisMonth: 130, status: 'active', hiredDate: '2025-08-15' },
+  ],
+  'inst8': [ // Cape Town University Extension
+    { lecturerId: '3', hoursThisMonth: 125, status: 'active', hiredDate: '2025-12-20' },
+    { lecturerId: '5', hoursThisMonth: 105, status: 'active', hiredDate: '2026-01-05' },
+  ],
+};
+
+// ─── Institution-Jobs Mapping ─────────────────────────────────────────────────
+export const MOCK_INSTITUTION_JOBS = {
+  'inst1': ['1', '2'], // African Institute of Technology
+  'inst2': ['2', '4'], // Berlin Business School
+  'inst3': ['3'], // Nairobi College of Engineering
+  'inst4': ['1'], // Mumbai Institute of Mathematics
+  'inst5': ['4'], // São Paulo Arts Academy
+  'inst6': [], // Lagos Digital Academy
+  'inst7': ['1', '2', '3', '4'], // Toronto Tech Institute
+  'inst8': ['2', '3'], // Cape Town University Extension
+};
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 export const MOCK_NOTIFICATIONS = [
   {
@@ -462,6 +533,144 @@ export const MOCK_NOTIFICATIONS = [
     time: '3 days ago', timeRaw: '2026-02-16T15:45:00Z',
     initials: 'SA', color: '#be185d',
     href: '/dashboard/jobs',
+  },
+];
+
+// ─── Admin: Institutions ──────────────────────────────────────────────────────
+export const MOCK_INSTITUTIONS = [
+  {
+    id: 'inst1', name: 'African Institute of Technology', initials: 'AIT', color: '#4f46e5',
+    type: 'University', country: 'Ghana', city: 'Accra',
+    status: 'active', verificationStatus: 'verified',
+    joinedAt: '2025-08-15', lastActive: '2 hours ago',
+    stats: { jobs: 12, lecturers: 8, activeContracts: 5, pendingVerifications: 0 },
+    contact: { name: 'Dr. Kwame Mensah', email: 'kmensah@ait.edu.gh', phone: '+233 24 123 4567' },
+    plan: 'Enterprise', monthlySpend: 4200,
+  },
+  {
+    id: 'inst2', name: 'Berlin Business School', initials: 'BBS', color: '#7c3aed',
+    type: 'Business School', country: 'Germany', city: 'Berlin',
+    status: 'active', verificationStatus: 'verified',
+    joinedAt: '2025-09-20', lastActive: '1 day ago',
+    stats: { jobs: 8, lecturers: 15, activeContracts: 12, pendingVerifications: 0 },
+    contact: { name: 'Prof. Heidi Schmidt', email: 'schmidt@bbs.de', phone: '+49 30 1234567' },
+    plan: 'Professional', monthlySpend: 6800,
+  },
+  {
+    id: 'inst3', name: 'Nairobi College of Engineering', initials: 'NCE', color: '#059669',
+    type: 'College', country: 'Kenya', city: 'Nairobi',
+    status: 'active', verificationStatus: 'verified',
+    joinedAt: '2025-10-05', lastActive: '3 hours ago',
+    stats: { jobs: 6, lecturers: 4, activeContracts: 3, pendingVerifications: 0 },
+    contact: { name: 'Mr. John Mwangi', email: 'jmwangi@nce.ac.ke', phone: '+254 20 1234567' },
+    plan: 'Starter', monthlySpend: 1800,
+  },
+  {
+    id: 'inst4', name: 'Mumbai Institute of Mathematics', initials: 'MIM', color: '#d97706',
+    type: 'Institute', country: 'India', city: 'Mumbai',
+    status: 'active', verificationStatus: 'in_review',
+    joinedAt: '2026-01-12', lastActive: '5 hours ago',
+    stats: { jobs: 4, lecturers: 2, activeContracts: 1, pendingVerifications: 3 },
+    contact: { name: 'Dr. Priya Kumar', email: 'pkumar@mim.edu.in', phone: '+91 22 12345678' },
+    plan: 'Starter', monthlySpend: 950,
+  },
+  {
+    id: 'inst5', name: 'São Paulo Arts Academy', initials: 'SAA', color: '#be185d',
+    type: 'Academy', country: 'Brazil', city: 'São Paulo',
+    status: 'active', verificationStatus: 'verified',
+    joinedAt: '2025-11-18', lastActive: '1 week ago',
+    stats: { jobs: 3, lecturers: 6, activeContracts: 4, pendingVerifications: 0 },
+    contact: { name: 'Prof. Ana Silva', email: 'asilva@saa.edu.br', phone: '+55 11 98765-4321' },
+    plan: 'Professional', monthlySpend: 3200,
+  },
+  {
+    id: 'inst6', name: 'Lagos Digital Academy', initials: 'LDA', color: '#0891b2',
+    type: 'Academy', country: 'Nigeria', city: 'Lagos',
+    status: 'suspended', verificationStatus: 'failed',
+    joinedAt: '2026-02-01', lastActive: '2 weeks ago',
+    stats: { jobs: 2, lecturers: 0, activeContracts: 0, pendingVerifications: 5 },
+    contact: { name: 'Mr. Emeka Obi', email: 'eobi@lda.ng', phone: '+234 80 1234 5678' },
+    plan: 'Starter', monthlySpend: 0,
+  },
+  {
+    id: 'inst7', name: 'Toronto Tech Institute', initials: 'TTI', color: '#dc2626',
+    type: 'Institute', country: 'Canada', city: 'Toronto',
+    status: 'active', verificationStatus: 'verified',
+    joinedAt: '2025-07-22', lastActive: '30 min ago',
+    stats: { jobs: 18, lecturers: 22, activeContracts: 18, pendingVerifications: 0 },
+    contact: { name: 'Dr. Sarah Chen', email: 'schen@tti.ca', phone: '+1 416 123 4567' },
+    plan: 'Enterprise', monthlySpend: 9500,
+  },
+  {
+    id: 'inst8', name: 'Cape Town University Extension', initials: 'CTU', color: '#16a34a',
+    type: 'University', country: 'South Africa', city: 'Cape Town',
+    status: 'active', verificationStatus: 'verified',
+    joinedAt: '2025-12-10', lastActive: '2 days ago',
+    stats: { jobs: 9, lecturers: 11, activeContracts: 7, pendingVerifications: 0 },
+    contact: { name: 'Prof. Thabo Mbeki', email: 'tmbeki@ctu.ac.za', phone: '+27 21 123 4567' },
+    plan: 'Professional', monthlySpend: 5100,
+  },
+];
+
+// ─── Admin: Platform Statistics ───────────────────────────────────────────────
+export const MOCK_ADMIN_STATS = {
+  institutions: { total: 8, active: 7, suspended: 1, pending: 0 },
+  lecturers: { total: 68, active: 62, inactive: 6 },
+  jobs: { total: 62, active: 48, filled: 14 },
+  contracts: { total: 50, active: 50, completed: 0 },
+  revenue: { thisMonth: 32550, lastMonth: 28900, growth: 12.6 },
+  verifications: { pending: 8, approved: 42, rejected: 3 },
+};
+
+// ─── Admin: Recent Activities ─────────────────────────────────────────────────
+export const MOCK_ADMIN_ACTIVITIES = [
+  {
+    id: 'act1', type: 'institution_joined', time: '2 hours ago',
+    title: 'New institution registered',
+    body: 'Mumbai Institute of Mathematics completed registration.',
+    institutionId: 'inst4', institutionName: 'Mumbai Institute of Mathematics', initials: 'MIM', color: '#d97706',
+  },
+  {
+    id: 'act2', type: 'verification_submitted', time: '5 hours ago',
+    title: 'Verification submitted',
+    body: 'Mumbai Institute of Mathematics submitted documents for review.',
+    institutionId: 'inst4', institutionName: 'Mumbai Institute of Mathematics', initials: 'MIM', color: '#d97706',
+  },
+  {
+    id: 'act3', type: 'contract_signed', time: '1 day ago',
+    title: 'Contract signed',
+    body: 'African Institute of Technology signed a contract with Dr. Amara Osei.',
+    institutionId: 'inst1', institutionName: 'African Institute of Technology', initials: 'AIT', color: '#4f46e5',
+  },
+  {
+    id: 'act4', type: 'institution_suspended', time: '2 days ago',
+    title: 'Institution suspended',
+    body: 'Lagos Digital Academy was suspended due to failed verification.',
+    institutionId: 'inst6', institutionName: 'Lagos Digital Academy', initials: 'LDA', color: '#0891b2',
+  },
+  {
+    id: 'act5', type: 'job_posted', time: '2 days ago',
+    title: 'Job posting created',
+    body: 'Toronto Tech Institute posted a new job: Machine Learning Professor.',
+    institutionId: 'inst7', institutionName: 'Toronto Tech Institute', initials: 'TTI', color: '#dc2626',
+  },
+  {
+    id: 'act6', type: 'lecturer_hired', time: '3 days ago',
+    title: 'Lecturer hired',
+    body: 'Berlin Business School hired Prof. Lena Müller for Business Strategy.',
+    institutionId: 'inst2', institutionName: 'Berlin Business School', initials: 'BBS', color: '#7c3aed',
+  },
+  {
+    id: 'act7', type: 'verification_approved', time: '4 days ago',
+    title: 'Verification approved',
+    body: 'Cape Town University Extension verification was approved.',
+    institutionId: 'inst8', institutionName: 'Cape Town University Extension', initials: 'CTU', color: '#16a34a',
+  },
+  {
+    id: 'act8', type: 'payment_received', time: '5 days ago',
+    title: 'Payment received',
+    body: 'Toronto Tech Institute paid $9,500 for Enterprise plan.',
+    institutionId: 'inst7', institutionName: 'Toronto Tech Institute', initials: 'TTI', color: '#dc2626',
   },
 ];
 

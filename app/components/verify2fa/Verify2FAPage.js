@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import logo from '@/app/assets/Frame 36712.png';
@@ -11,6 +11,8 @@ import styles from './Verify2FAPage.module.css';
 
 export default function Verify2FAPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role') || 'institution';
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [useBackup, setUseBackup] = useState(false);
@@ -27,7 +29,8 @@ export default function Verify2FAPage() {
       return;
     }
     // TODO: verify 2FA code via API
-    router.push('/dashboard');
+    const redirectPath = role === 'admin' ? '/admin' : '/dashboard';
+    router.push(redirectPath);
   };
 
   return (

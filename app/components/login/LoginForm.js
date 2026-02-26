@@ -20,7 +20,7 @@ export default function LoginForm() {
     e.preventDefault();
     // TODO: wire up to authentication API
     console.log({ role, username, password });
-    router.push('/verify-2fa');
+    router.push(`/verify-2fa?role=${role}`);
   };
 
   return (
