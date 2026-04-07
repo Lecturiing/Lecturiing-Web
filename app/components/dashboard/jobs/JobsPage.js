@@ -1,17 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_JOBS } from '@/app/lib/mockData';
 import styles from './JobsPage.module.css';
+import { jobService } from '@/app/lib/services/jobService';
 
 const TABS = ['All', 'Active', 'Draft', 'Closed'];
 
 export default function JobsPage() {
   const [tab, setTab] = useState('All');
   const [search, setSearch] = useState('');
+  const [allJobs, setAllJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const jobs = MOCK_JOBS.filter((j) => {
+  useEffect(() => {
+    jobService.list({ pageSize: 100 })
+      .then((data) => setAllJobs(data?.jobs ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const jobs = allJobs.filter((j) => {
     if (tab !== 'All' && j.status !== tab.toLowerCase()) return false;
     if (search && !j.title.toLowerCase().includes(search.toLowerCase()) && !j.field.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
@@ -28,7 +37,7 @@ export default function JobsPage() {
         {TABS.map((t) => (
           <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
             {t}
-            <span className={styles.tabCount}>{t === 'All' ? MOCK_JOBS.length : MOCK_JOBS.filter((j) => j.status === t.toLowerCase()).length}</span>
+            <span className={styles.tabCount}>{t === 'All' ? allJobs.length : allJobs.filter((j) => j.status === t.toLowerCase()).length}</span>
           </button>
         ))}
       </div>
@@ -55,11 +64,11 @@ export default function JobsPage() {
             <div className={styles.jobRight}>
               <StatusBadge status={job.status} />
               <div className={styles.jobStats}>
-                <span className={styles.applicants}>{job.applicants} applicants</span>
-                <span className={styles.deadline}>Closes {job.deadline}</span>
+                <span className={styles.applicants}>{job.applicantCount ?? 0} applicants</span>
+                <span className={styles.deadline}>Closes {job.deadline ? new Date(job.deadline).toLocaleDateString() : '—'}</span>
               </div>
               <div className={styles.jobActions}>
-                <button className={styles.actionBtn}>Edit</button>
+                <Link href={`/dashboard/jobs/${job.id}/edit`} className={styles.actionBtn}>Edit</Link>
                 <Link href={`/dashboard/jobs/${job.id}/applicants`} className={`${styles.actionBtn} ${styles.viewBtn}`}>
                   View Applicants
                 </Link>

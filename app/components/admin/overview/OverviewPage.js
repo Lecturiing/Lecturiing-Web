@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_ADMIN_STATS, MOCK_ADMIN_ACTIVITIES } from '@/app/lib/mockData';
 import styles from './OverviewPage.module.css';
+import { adminService } from '@/app/lib/services/adminService';
 
 const ACTIVITY_ICONS = {
   institution_joined: '🏢',
@@ -16,9 +16,30 @@ const ACTIVITY_ICONS = {
   payment_received: '💰',
 };
 
+const DEFAULT_STATS = {
+  institutions: { total: 0, active: 0, suspended: 0 },
+  lecturers: { total: 0, active: 0 },
+  jobs: { active: 0, filled: 0 },
+  revenue: { thisMonth: 0, growth: 0 },
+  contracts: { active: 0 },
+  verifications: { pending: 0, approved: 0, rejected: 0 },
+};
+
 export default function OverviewPage() {
-  const stats = MOCK_ADMIN_STATS;
-  const [activities] = useState(MOCK_ADMIN_ACTIVITIES);
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    adminService.getStats()
+      .then((data) => {
+        console.log(data)
+        setStats({ ...DEFAULT_STATS, ...data })
+      })
+      .catch(() => {});
+    adminService.getActivity()
+      .then((data) => setActivities(Array.isArray(data) ? data : (data?.activities ?? [])))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -167,6 +188,7 @@ export default function OverviewPage() {
               </div>
             </div>
           ))}
+          {activities.length === 0 && <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>No recent activity.</p>}
         </div>
       </div>
     </div>

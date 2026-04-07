@@ -1,26 +1,50 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import logo from '@/app/assets/Frame 36712.png';
 import Link from 'next/link';
 import RoleSelector from './RoleSelector';
 import SocialButtons from './SocialButtons';
 import styles from './LoginForm.module.css';
+import { authService } from '@/app/lib/services/authService';
+import api from '@/app/lib/api';
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [role, setRole] = useState('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const urlError = searchParams.get('error');
+    if (urlError) setError(decodeURIComponent(urlError));
+  }, [searchParams]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: wire up to authentication API
-    console.log({ role, username, password });
-    router.push(`/verify-2fa?role=${role}`);
+    setError('');
+    setLoading(true);
+    try {
+      const data = await authService.login({ username, password, role });
+      if (data.require2fa) {
+        localStorage.setItem('tempToken', data.tempToken);
+        router.push(`/verify-2fa?role=${role}`);
+      } else {
+        api.setToken(data.accessToken);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        router.push(role === 'admin' ? '/admin' : '/dashboard');
+      }
+    } catch (err) {
+      setError(err.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -96,25 +120,31 @@ export default function LoginForm() {
           </a>
         </div>
 
-        <button type="submit" className={styles.submitBtn}>
-          Sign In
+        {error && <p className={styles.errorText}>{error}</p>}
+
+        <button type="submit" className={styles.submitBtn} disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
 
-      <div className={styles.divider}>
-        <span className={styles.dividerLine} />
-        <span className={styles.dividerText}>or continue with</span>
-        <span className={styles.dividerLine} />
-      </div>
+      {role !== 'admin' && (
+        <>
+          <div className={styles.divider}>
+            <span className={styles.dividerLine} />
+            <span className={styles.dividerText}>or continue with</span>
+            <span className={styles.dividerLine} />
+          </div>
 
-      <SocialButtons />
+          <SocialButtons role={role} />
 
-      <p className={styles.footer}>
-        Don&apos;t have an account?{' '}
-        <Link href="/signup" className={styles.footerLink}>
-          Register your institution
-        </Link>
-      </p>
+          <p className={styles.footer}>
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className={styles.footerLink}>
+              Register your institution
+            </Link>
+          </p>
+        </>
+      )}
     </div>
   );
 }

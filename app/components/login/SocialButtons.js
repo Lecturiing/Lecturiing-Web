@@ -33,15 +33,15 @@ function AppleIcon() {
   );
 }
 
-export default function SocialButtons() {
+import { authService } from '@/app/lib/services/authService';
+
+export default function SocialButtons({ role = 'institution' }) {
   const handleGoogle = () => {
-    // TODO: integrate Google OAuth (e.g. next-auth or Firebase)
-    console.log('Google sign-in');
+    window.location.href = authService.googleAuthUrl(role);
   };
 
   const handleApple = () => {
-    // TODO: integrate Apple Sign In
-    console.log('Apple sign-in');
+    console.log('Apple sign-in not yet available');
   };
 
   return (

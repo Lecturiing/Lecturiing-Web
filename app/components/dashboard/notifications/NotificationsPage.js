@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_NOTIFICATIONS } from '@/app/lib/mockData';
 import styles from './NotificationsPage.module.css';
+import { notificationService } from '@/app/lib/services/notificationService';
 
 const TYPE_LABELS = {
   application: 'Application',
@@ -45,14 +45,33 @@ function NotifIcon({ type, icon }) {
 
 export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState('All');
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    notificationService.list({ pageSize: 50 })
+      .then((data) => setNotifications(data?.notifications ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const filtered = filterByTab(notifications, activeTab);
 
-  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  const markRead = (id) => setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
-  const deleteNotif = (id) => setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const markAllRead = async () => {
+    try { await notificationService.markAllRead(); } catch (_) {}
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const markRead = async (id) => {
+    try { await notificationService.markRead(id); } catch (_) {}
+    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const deleteNotif = async (id) => {
+    try { await notificationService.delete(id); } catch (_) {}
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   return (
     <div className={styles.page}>

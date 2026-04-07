@@ -7,6 +7,7 @@ import Link from 'next/link';
 import logo from '@/app/assets/Frame 36712.png';
 import SocialButtons from '../login/SocialButtons';
 import styles from './SignupForm.module.css';
+import { authService } from '@/app/lib/services/authService';
 
 const INSTITUTION_TYPES = [
   'University',
@@ -30,18 +31,28 @@ export default function SignupForm() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const passwordMismatch =
     form.confirmPassword.length > 0 && form.password !== form.confirmPassword;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (passwordMismatch) return;
-    // TODO: wire up to registration API
-    console.log(form);
-    router.push('/verify-otp');
+    setError('');
+    setLoading(true);
+    try {
+      const data = await authService.signup(form);
+      localStorage.setItem('signupUserId', data.userId);
+      router.push('/verify-otp');
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -183,8 +194,10 @@ export default function SignupForm() {
           </div>
         </div>
 
-        <button type="submit" className={styles.submitBtn}>
-          Create Account
+        {error && <p className={styles.errorText}>{error}</p>}
+
+        <button type="submit" className={styles.submitBtn} disabled={loading || passwordMismatch}>
+          {loading ? 'Creating account…' : 'Create Account'}
         </button>
       </form>
 
@@ -194,7 +207,7 @@ export default function SignupForm() {
         <span className={styles.dividerLine} />
       </div>
 
-      <SocialButtons />
+      <SocialButtons role="institution" />
 
       <p className={styles.footer}>
         Already have an account?{' '}

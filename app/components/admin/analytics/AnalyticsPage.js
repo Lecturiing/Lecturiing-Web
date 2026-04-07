@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_ADMIN_STATS, MOCK_INSTITUTIONS } from '@/app/lib/mockData';
+import { useState, useEffect } from 'react';
 import styles from './AnalyticsPage.module.css';
+import { adminService } from '@/app/lib/services/adminService';
 
 const REVENUE_DATA = [
   { month: 'Aug', revenue: 18500, institutions: 4 },
@@ -25,9 +25,25 @@ const JOB_CATEGORIES = [
 
 const TABS = ['Overview', 'Revenue', 'Institutions', 'Jobs & Lecturers'];
 
+const DEFAULT_STATS = {
+  institutions: { total: 0, active: 0, suspended: 0, pending: 0 },
+  lecturers: { total: 0, active: 0 },
+  jobs: { total: 0, active: 0, filled: 0 },
+};
+
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('Overview');
-  const stats = MOCK_ADMIN_STATS;
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [institutions, setInstitutions] = useState([]);
+
+  useEffect(() => {
+    adminService.getStats()
+      .then((data) => setStats({ ...DEFAULT_STATS, ...data }))
+      .catch(() => {});
+    adminService.listInstitutions()
+      .then((data) => setInstitutions(Array.isArray(data) ? data : (data?.institutions ?? [])))
+      .catch(() => {});
+  }, []);
 
   const maxRevenue = Math.max(...REVENUE_DATA.map((d) => d.revenue));
 
@@ -199,20 +215,20 @@ export default function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_INSTITUTIONS.filter((i) => i.status === 'active')
-                  .sort((a, b) => b.monthlySpend - a.monthlySpend)
+                {institutions.filter((i) => i.status === 'active')
+                  .sort((a, b) => (b.monthlySpend ?? 0) - (a.monthlySpend ?? 0))
                   .map((inst) => (
                     <tr key={inst.id}>
                       <td>
                         <div className={styles.instCell}>
-                          <div className={styles.instAvatar} style={{ background: inst.color }}>
+                          <div className={styles.instAvatar} style={{ background: inst.avatarColor ?? inst.color }}>
                             {inst.initials}
                           </div>
                           <span className={styles.instName}>{inst.name}</span>
                         </div>
                       </td>
                       <td>{inst.plan}</td>
-                      <td className={styles.revenue}>${inst.monthlySpend.toLocaleString()}</td>
+                      <td className={styles.revenue}>${(inst.monthlySpend ?? 0).toLocaleString()}</td>
                       <td>
                         <span className={styles.statusActive}>Active</span>
                       </td>

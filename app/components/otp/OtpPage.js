@@ -8,6 +8,8 @@ import logo from '@/app/assets/Frame 36712.png';
 import FlowCard from '../shared/FlowCard';
 import OtpInput from '../shared/OtpInput';
 import styles from './OtpPage.module.css';
+import { authService } from '@/app/lib/services/authService';
+import api from '@/app/lib/api';
 
 const RESEND_SECONDS = 60;
 
@@ -15,6 +17,7 @@ export default function OtpPage() {
   const router = useRouter();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const [canResend, setCanResend] = useState(false);
 
@@ -24,20 +27,36 @@ export default function OtpPage() {
     return () => clearTimeout(t);
   }, [countdown]);
 
-  const handleResend = useCallback(() => {
+  const handleResend = useCallback(async () => {
     if (!canResend) return;
-    // TODO: call resend OTP API
+    const userId = localStorage.getItem('signupUserId');
+    try { await authService.verifyOtp({ userId, otp: 'resend' }); } catch (_) {}
     setCountdown(RESEND_SECONDS);
     setCanResend(false);
     setCode('');
     setError('');
   }, [canResend]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (code.length < 6) { setError('Please enter the full 6-digit code.'); return; }
-    // TODO: verify OTP via API
-    router.push('/setup-2fa');
+    setError('');
+    setLoading(true);
+    try {
+      const userId = localStorage.getItem('signupUserId');
+      const data = await authService.verifyOtp({ userId, otp: code });
+      // Some backends return a setup token after OTP verification — store it if present
+      const setupToken = data?.accessToken ?? data?.tempToken ?? data?.setupToken ?? data?.token;
+      if (setupToken) {
+        api.setToken(setupToken);
+        localStorage.setItem('accessToken', setupToken);
+      }
+      router.push('/setup-2fa');
+    } catch (err) {
+      setError(err.message || 'Invalid code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,9 +83,9 @@ export default function OtpPage() {
         <button
           type="submit"
           className={styles.submitBtn}
-          disabled={code.length < 6}
+          disabled={code.length < 6 || loading}
         >
-          Verify Email
+          {loading ? 'Verifying…' : 'Verify Email'}
         </button>
       </form>
 

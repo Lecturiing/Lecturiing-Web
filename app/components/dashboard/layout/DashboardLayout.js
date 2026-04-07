@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MOCK_NOTIFICATIONS } from '@/app/lib/mockData';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { notificationService } from '@/app/lib/services/notificationService';
 import Link from 'next/link';
 import Image from 'next/image';
 import logo from '@/app/assets/Frame 36712.png';
@@ -10,7 +10,7 @@ import styles from './DashboardLayout.module.css';
 
 const NAV = [
   { href: '/dashboard', label: 'Overview', icon: HomeIcon, exact: true },
-  { href: '/dashboard/onboarding', label: 'Profile Setup', icon: BuildingIcon },
+  { href: '/dashboard/profile', label: 'Profile', icon: UserIcon },
   { href: '/dashboard/jobs', label: 'Job Postings', icon: BriefcaseIcon },
   { href: '/dashboard/shortlist', label: 'Shortlist', icon: StarIcon },
   { href: '/dashboard/contracts', label: 'Contracts', icon: DocumentIcon },
@@ -25,11 +25,19 @@ const NAV = [
 export default function DashboardLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const pathname = usePathname();
+  const router = useRouter();
   const notifRef = useRef(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Fetch notifications on mount
+  useEffect(() => {
+    notificationService.list({ pageSize: 10 })
+      .then((data) => setNotifications(data?.notifications ?? []))
+      .catch(() => {});
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -42,8 +50,26 @@ export default function DashboardLayout({ children }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  const markRead = (id) => setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+  const markAllRead = async () => {
+    try { await notificationService.markAllRead(); } catch (_) {}
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const markRead = async (id) => {
+    try { await notificationService.markRead(id); } catch (_) {}
+    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/logout`, {
+        method: 'POST', credentials: 'include',
+      });
+    } catch (_) {}
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    router.push('/');
+  };
 
   const active = (item) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -173,16 +199,34 @@ export default function DashboardLayout({ children }) {
             </div>
 
             <div className={styles.userChip}>
-              <div className={styles.userAvatar}>IN</div>
-              <span className={styles.userName}>Institution</span>
+              <DynamicUserChip />
             </div>
-            <Link href="/" className={styles.signOut}>Sign out</Link>
+            <button onClick={handleSignOut} className={styles.signOut} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
           </div>
         </header>
 
         <main className={styles.main}>{children}</main>
       </div>
     </div>
+  );
+}
+
+function DynamicUserChip() {
+  const [info, setInfo] = useState({ initials: 'IN', name: 'Institution' });
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      setInfo({
+        initials: u.initials || (u.name ? u.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : 'IN'),
+        name: u.name || 'Institution',
+      });
+    } catch (_) {}
+  }, []);
+  return (
+    <>
+      <div className={styles.userAvatar}>{info.initials}</div>
+      <span className={styles.userName}>{info.name}</span>
+    </>
   );
 }
 
@@ -238,4 +282,7 @@ function ChevronIcon({ flipped }) {
       <polyline points="15,18 9,12 15,6" />
     </svg>
   );
+}
+function UserIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styles from './VerificationPage.module.css';
+import { verificationService } from '@/app/lib/services/verificationService';
 
 const REQUIRED_DOCS = [
   {
@@ -36,8 +37,6 @@ const REQUIRED_DOCS = [
   },
 ];
 
-// For demo purposes — change this to 'pending' | 'in_review' | 'reviewed' | 'failed'
-const DEMO_STATUS = 'pending';
 const DEMO_FAILURE_REASON =
   'The submitted Certificate of Incorporation appears to be expired. Please upload a current, valid document and resubmit.';
 
@@ -45,15 +44,27 @@ const STATUS_META = {
   pending: { label: 'Not Submitted', color: '#6b7280', bg: '#f3f4f6', icon: '○' },
   in_review: { label: 'In Review', color: '#d97706', bg: '#fffbeb', icon: '◉' },
   reviewed: { label: 'Verified', color: '#059669', bg: '#ecfdf5', icon: '✓' },
+  verified: { label: 'Verified', color: '#059669', bg: '#ecfdf5', icon: '✓' },
   failed: { label: 'Verification Failed', color: '#dc2626', bg: '#fef2f2', icon: '✕' },
 };
 
 export default function VerificationPage() {
-  const [status, setStatus] = useState(DEMO_STATUS);
+  const [status, setStatus] = useState('pending');
   const [files, setFiles] = useState({});
   const [additionalInfo, setAdditionalInfo] = useState({ website: '', linkedin: '', notes: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [failureReason, setFailureReason] = useState(DEMO_FAILURE_REASON);
   const fileRefs = useRef({});
+
+  useEffect(() => {
+    verificationService.getStatus()
+      .then((data) => {
+        if (data?.verificationStatus) setStatus(data.verificationStatus);
+        if (data?.failureReason) setFailureReason(data.failureReason);
+        if (data?.verificationStatus && data.verificationStatus !== 'pending') setSubmitted(true);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleFile = (docId, e) => {
     const file = e.target.files[0];
@@ -68,16 +79,23 @@ export default function VerificationPage() {
 
   const allUploaded = REQUIRED_DOCS.every((d) => files[d.id]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!allUploaded) return;
+    const formData = new FormData();
+    REQUIRED_DOCS.forEach((doc) => { if (files[doc.id]) formData.append(doc.id, files[doc.id]); });
+    if (additionalInfo.website) formData.append('website', additionalInfo.website);
+    if (additionalInfo.linkedin) formData.append('linkedin', additionalInfo.linkedin);
+    if (additionalInfo.notes) formData.append('notes', additionalInfo.notes);
     setStatus('in_review');
     setSubmitted(true);
+    try { await verificationService.submit(formData); } catch (_) {}
   };
 
-  const handleResubmit = () => {
+  const handleResubmit = async () => {
     setStatus('pending');
     setFiles({});
     setSubmitted(false);
+    try { await verificationService.resubmit(new FormData()); } catch (_) {}
   };
 
   const meta = STATUS_META[status];
@@ -97,11 +115,11 @@ export default function VerificationPage() {
           {status === 'in_review' && (
             <p className={styles.statusSub}>Your documents have been submitted and are currently being reviewed by our team. This typically takes 1–3 business days.</p>
           )}
-          {status === 'reviewed' && (
+          {(status === 'reviewed' || status === 'verified') && (
             <p className={styles.statusSub}>Your institution has been successfully verified. All platform features are now fully available.</p>
           )}
           {status === 'failed' && (
-            <p className={styles.statusSub}>{DEMO_FAILURE_REASON}</p>
+            <p className={styles.statusSub}>{failureReason}</p>
           )}
         </div>
         {status === 'failed' && (
@@ -117,7 +135,8 @@ export default function VerificationPage() {
           { key: 'reviewed', label: 'Reviewed' },
         ].map((stage, i, arr) => {
           const order = ['pending', 'in_review', 'reviewed', 'failed'];
-          const currentIdx = order.indexOf(status);
+          const normalizedStatus = status === 'verified' ? 'reviewed' : status;
+          const currentIdx = order.indexOf(normalizedStatus);
           const stageIdx = order.indexOf(stage.key);
           const isDone = status !== 'failed' && currentIdx > stageIdx;
           const isCurrent = status !== 'failed' && currentIdx === stageIdx;

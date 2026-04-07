@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_CONTRACT_DOCS } from '@/app/lib/mockData';
+import { useState, useEffect, useRef } from 'react';
 import styles from './DocumentsPage.module.css';
+import { documentService } from '@/app/lib/services/documentService';
 
 const CATEGORIES = ['All', 'Contract', 'NDA', 'IP', 'Policy'];
 
@@ -14,27 +14,50 @@ const CATEGORY_COLORS = {
 };
 
 export default function DocumentsPage() {
-  const [docs, setDocs] = useState(MOCK_CONTRACT_DOCS);
+  const [docs, setDocs] = useState([]);
   const [cat, setCat] = useState('All');
   const [previewDoc, setPreviewDoc] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [newDoc, setNewDoc] = useState({ title: '', category: 'Contract', description: '' });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    documentService.list()
+      .then((data) => setDocs(Array.isArray(data) ? data : (data?.documents ?? [])))
+      .catch(() => {});
+  }, []);
 
   const filtered = cat === 'All' ? docs : docs.filter((d) => d.category === cat);
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!newDoc.title.trim()) return;
-    const doc = {
-      id: `doc${docs.length + 1}`,
-      title: newDoc.title,
-      category: newDoc.category,
-      description: newDoc.description || 'No description provided.',
-      pages: Math.floor(Math.random() * 8) + 2,
-      lastUpdated: new Date().toISOString().split('T')[0],
-    };
-    setDocs((prev) => [...prev, doc]);
-    setNewDoc({ title: '', category: 'Contract', description: '' });
-    setShowUpload(false);
+    if (!selectedFile) { setUploadError('Please select a file to upload.'); return; }
+    setUploadError('');
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('title', newDoc.title);
+      formData.append('category', newDoc.category);
+      if (newDoc.description) formData.append('description', newDoc.description);
+      const created = await documentService.upload(formData);
+      setDocs((prev) => [...prev, created]);
+      setNewDoc({ title: '', category: 'Contract', description: '' });
+      setSelectedFile(null);
+      setShowUpload(false);
+    } catch (err) {
+      setUploadError(err.message || 'Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    setDocs((prev) => prev.filter((d) => d.id !== id));
+    try { await documentService.delete(id); } catch (_) {}
   };
 
   return (
@@ -45,7 +68,7 @@ export default function DocumentsPage() {
           <h2 className={styles.title}>Document Library</h2>
           <p className={styles.subtitle}>Manage contract templates and policy documents. Link them to job postings during job creation.</p>
         </div>
-        <button className={styles.uploadBtn} onClick={() => setShowUpload(true)}>+ Add Document</button>
+        <button className={styles.uploadBtn} onClick={() => { setShowUpload(true); setSelectedFile(null); setUploadError(''); }}>+ Add Document</button>
       </div>
 
       {/* ── Category Tabs ── */}
@@ -75,13 +98,16 @@ export default function DocumentsPage() {
               <h3 className={styles.docTitle}>{doc.title}</h3>
               <p className={styles.docDesc}>{doc.description}</p>
               <div className={styles.docMeta}>
-                <span>{doc.pages} pages</span>
+                <span>{doc.pages} {doc.pages === 1 ? 'page' : 'pages'}</span>
                 <span>·</span>
-                <span>Updated {doc.lastUpdated}</span>
+                <span>Updated {doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : '—'}</span>
               </div>
               <div className={styles.cardActions}>
                 <button className={styles.previewBtn} onClick={() => setPreviewDoc(doc)}>Preview</button>
-                <button className={styles.deleteBtn} onClick={() => setDocs((prev) => prev.filter((d) => d.id !== doc.id))}>Remove</button>
+                {doc.fileUrl && (
+                  <a className={styles.downloadBtn} href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Download</a>
+                )}
+                <button className={styles.deleteBtn} onClick={() => handleDelete(doc.id)}>Remove</button>
               </div>
             </div>
           );
@@ -101,35 +127,44 @@ export default function DocumentsPage() {
               <div className={styles.previewMeta}>
                 <span>{previewDoc.category}</span>
                 <span>·</span>
-                <span>{previewDoc.pages} pages</span>
+                <span>{previewDoc.pages} {previewDoc.pages === 1 ? 'page' : 'pages'}</span>
                 <span>·</span>
-                <span>Last updated {previewDoc.lastUpdated}</span>
+                <span>Last updated {previewDoc.lastUpdated ? new Date(previewDoc.lastUpdated).toLocaleDateString() : '—'}</span>
+                {previewDoc.fileUrl && (
+                  <>
+                    <span>·</span>
+                    <a className={styles.previewDownloadLink} href={previewDoc.fileUrl} target="_blank" rel="noopener noreferrer">Download ↗</a>
+                  </>
+                )}
               </div>
-              <p className={styles.previewDesc}>{previewDoc.description}</p>
-              <div className={styles.previewDoc}>
-                <div className={styles.previewDocHeader}>
-                  <p className={styles.previewDocTitle}>{previewDoc.title}</p>
-                  <p className={styles.previewDocSub}>Lecturiing Institution Platform — Confidential</p>
+              {previewDoc.description && <p className={styles.previewDesc}>{previewDoc.description}</p>}
+              {previewDoc.fileUrl && previewDoc.mimeType === 'application/pdf' ? (
+                <iframe
+                  src={previewDoc.fileUrl}
+                  className={styles.previewIframe}
+                  title={previewDoc.title}
+                />
+              ) : previewDoc.fileUrl ? (
+                <div className={styles.previewNoEmbed}>
+                  <span>📄</span>
+                  <p>This file type cannot be previewed in the browser.</p>
+                  <a className={styles.primaryBtn} href={previewDoc.fileUrl} target="_blank" rel="noopener noreferrer">Download File</a>
                 </div>
-                <div className={styles.previewDocBody}>
-                  <p><strong>1. Parties</strong><br />This agreement is entered into between the Institution ("Employer") and the Lecturer ("Contractor") as identified in the offer letter attached hereto.</p>
-                  <p><strong>2. Scope of Engagement</strong><br />The Contractor agrees to deliver the services described in the associated Job Posting, including but not limited to curriculum delivery, student assessment, and related academic duties.</p>
-                  <p><strong>3. Remuneration</strong><br />Compensation shall be paid as specified in the offer letter, subject to successful completion of deliverables and applicable tax withholdings.</p>
-                  <p><strong>4. Confidentiality</strong><br />The Contractor shall maintain strict confidentiality regarding institutional information, student data, and proprietary course materials.</p>
-                  <p><strong>5. Term</strong><br />This agreement commences and terminates on the dates specified in the offer letter, unless terminated earlier in accordance with Section 7.</p>
-                  <p className={styles.previewEllipsis}>[ … {previewDoc.pages - 1} more pages ]</p>
-                </div>
-                <div className={styles.previewSignatureRow}>
-                  <div className={styles.sigBlock}>
-                    <div className={styles.sigLine} />
-                    <p>Authorised Signatory — Institution</p>
+              ) : (
+                <div className={styles.previewDoc}>
+                  <div className={styles.previewDocHeader}>
+                    <p className={styles.previewDocTitle}>{previewDoc.title}</p>
+                    <p className={styles.previewDocSub}>Lecturiing Institution Platform — Confidential</p>
                   </div>
-                  <div className={styles.sigBlock}>
-                    <div className={styles.sigLine} />
-                    <p>Lecturer Signature</p>
+                  <div className={styles.previewDocBody}>
+                    <p><strong>1. Parties</strong><br />This agreement is entered into between the Institution ("Employer") and the Lecturer ("Contractor") as identified in the offer letter attached hereto.</p>
+                    <p><strong>2. Scope of Engagement</strong><br />The Contractor agrees to deliver the services described in the associated Job Posting, including but not limited to curriculum delivery, student assessment, and related academic duties.</p>
+                    <p><strong>3. Remuneration</strong><br />Compensation shall be paid as specified in the offer letter, subject to successful completion of deliverables and applicable tax withholdings.</p>
+                    <p><strong>4. Confidentiality</strong><br />The Contractor shall maintain strict confidentiality regarding institutional information, student data, and proprietary course materials.</p>
+                    <p><strong>5. Term</strong><br />This agreement commences and terminates on the dates specified in the offer letter, unless terminated earlier in accordance with Section 7.</p>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -137,11 +172,11 @@ export default function DocumentsPage() {
 
       {/* ── Upload / Add Modal ── */}
       {showUpload && (
-        <div className={styles.modalOverlay} onClick={() => setShowUpload(false)}>
+        <div className={styles.modalOverlay} onClick={() => { setShowUpload(false); setSelectedFile(null); setUploadError(''); }}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Add Document</h2>
-              <button className={styles.modalClose} onClick={() => setShowUpload(false)}>✕</button>
+              <button className={styles.modalClose} onClick={() => { setShowUpload(false); setSelectedFile(null); setUploadError(''); }}>✕</button>
             </div>
             <div className={styles.modalBody}>
               <div className={styles.field}>
@@ -158,15 +193,37 @@ export default function DocumentsPage() {
                 <label className={styles.fieldLabel}>Description</label>
                 <textarea className={styles.fieldTextarea} rows={3} placeholder="Brief description of this document's purpose…" value={newDoc.description} onChange={(e) => setNewDoc((p) => ({ ...p, description: e.target.value }))} />
               </div>
-              <div className={styles.uploadDropzone}>
-                <span>📎</span>
-                <span>Drag & drop file or click to browse (PDF, DOCX)</span>
-                <span className={styles.uploadNote}>For demo purposes, file upload is simulated.</span>
+              <div
+                className={`${styles.uploadDropzone} ${selectedFile ? styles.uploadDropzoneHasFile : ''}`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  style={{ display: 'none' }}
+                  onChange={(e) => { setSelectedFile(e.target.files?.[0] ?? null); setUploadError(''); }}
+                />
+                {selectedFile ? (
+                  <>
+                    <span>📄</span>
+                    <span className={styles.uploadFileName}>{selectedFile.name}</span>
+                    <span className={styles.uploadNote}>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB — click to change</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📎</span>
+                    <span>Click to browse (PDF, DOCX, TXT · max 20 MB)</span>
+                  </>
+                )}
               </div>
+              {uploadError && <p className={styles.uploadError}>{uploadError}</p>}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.modalCancel} onClick={() => setShowUpload(false)}>Cancel</button>
-              <button className={styles.modalSave} disabled={!newDoc.title.trim()} onClick={handleUpload}>Add to Library</button>
+              <button className={styles.modalCancel} onClick={() => { setShowUpload(false); setSelectedFile(null); setUploadError(''); }}>Cancel</button>
+              <button className={styles.modalSave} disabled={!newDoc.title.trim() || uploading} onClick={handleUpload}>
+                {uploading ? 'Saving…' : 'Add to Library'}
+              </button>
             </div>
           </div>
         </div>

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_INSTITUTIONS } from '@/app/lib/mockData';
 import styles from './InstitutionsPage.module.css';
+import { adminService } from '@/app/lib/services/adminService';
 
 const STATUS_COLORS = {
   active: { bg: '#d1fae5', text: '#065f46', dot: '#10b981' },
@@ -29,17 +29,28 @@ function filterByTab(institutions, tab) {
 
 export default function InstitutionsPage() {
   const [activeTab, setActiveTab] = useState('All');
-  const [institutions] = useState(MOCK_INSTITUTIONS);
+  const [institutions, setInstitutions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  useEffect(() => {
+    adminService.listInstitutions()
+      .then((data) => setInstitutions(Array.isArray(data) ? data : (data?.institutions ?? [])))
+      .catch(() => {});
+  }, []);
+
   const filtered = filterByTab(institutions, activeTab).filter((inst) =>
-    inst.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    inst.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    inst.city.toLowerCase().includes(searchQuery.toLowerCase())
+    (inst.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (inst.country ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (inst.city ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const pendingVerificationCount = institutions.filter((i) => i.verificationStatus === 'in_review').length;
   const suspendedCount = institutions.filter((i) => i.status === 'suspended').length;
+
+  const handleUpdateStatus = async (id, status) => {
+    try { await adminService.updateInstitutionStatus(id, status); } catch (_) {}
+    setInstitutions((prev) => prev.map((i) => i.id === id ? { ...i, status } : i));
+  };
 
   return (
     <div className={styles.page}>
@@ -118,10 +129,7 @@ export default function InstitutionsPage() {
                   <tr key={inst.id} className={styles.row}>
                     <td>
                       <div className={styles.instCell}>
-                        <div
-                          className={styles.instAvatar}
-                          style={{ background: inst.color }}
-                        >
+                        <div className={styles.instAvatar} style={{ background: inst.avatarColor ?? inst.color }}>
                           {inst.initials}
                         </div>
                         <div className={styles.instInfo}>
@@ -131,38 +139,24 @@ export default function InstitutionsPage() {
                       </div>
                     </td>
                     <td>{inst.type}</td>
+                    <td>{inst.city}, {inst.country}</td>
                     <td>
-                      {inst.city}, {inst.country}
-                    </td>
-                    <td>
-                      <span
-                        className={styles.statusBadge}
-                        style={{ background: statusStyle.bg, color: statusStyle.text }}
-                      >
-                        <span
-                          className={styles.statusDot}
-                          style={{ background: statusStyle.dot }}
-                        />
+                      <span className={styles.statusBadge} style={{ background: statusStyle.bg, color: statusStyle.text }}>
+                        <span className={styles.statusDot} style={{ background: statusStyle.dot }} />
                         {inst.status}
                       </span>
                     </td>
                     <td>
-                      <span
-                        className={styles.verificationBadge}
-                        style={{ background: verificationStyle.bg, color: verificationStyle.text }}
-                      >
-                        {verificationStyle.icon} {inst.verificationStatus.replace('_', ' ')}
+                      <span className={styles.verificationBadge} style={{ background: verificationStyle.bg, color: verificationStyle.text }}>
+                        {verificationStyle.icon} {(inst.verificationStatus ?? '').replace('_', ' ')}
                       </span>
                     </td>
-                    <td>{inst.stats.jobs}</td>
-                    <td>{inst.stats.lecturers}</td>
-                    <td className={styles.revenue}>${inst.monthlySpend.toLocaleString()}</td>
+                    <td>{inst.jobCount ?? 0}</td>
+                    <td>{inst.stats?.lecturers ?? inst.lecturerCount ?? 0}</td>
+                    <td className={styles.revenue}>${(inst.monthlySpend ?? 0).toLocaleString()}</td>
                     <td className={styles.lastActive}>{inst.lastActive}</td>
                     <td>
-                      <Link
-                        href={`/admin/institutions/${inst.id}`}
-                        className={styles.viewBtn}
-                      >
+                      <Link href={`/admin/institutions/${inst.id}`} className={styles.viewBtn}>
                         View →
                       </Link>
                     </td>

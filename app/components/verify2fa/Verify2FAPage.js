@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,6 +8,8 @@ import logo from '@/app/assets/Frame 36712.png';
 import FlowCard from '../shared/FlowCard';
 import OtpInput from '../shared/OtpInput';
 import styles from './Verify2FAPage.module.css';
+import { authService } from '@/app/lib/services/authService';
+import api from '@/app/lib/api';
 
 export default function Verify2FAPage() {
   const router = useRouter();
@@ -15,22 +17,29 @@ export default function Verify2FAPage() {
   const role = searchParams.get('role') || 'institution';
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [useBackup, setUseBackup] = useState(false);
   const [backupCode, setBackupCode] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!useBackup && code.length < 6) {
-      setError('Please enter the full 6-digit code.');
-      return;
+    if (!useBackup && code.length < 6) { setError('Please enter the full 6-digit code.'); return; }
+    if (useBackup && backupCode.trim().length < 8) { setError('Please enter a valid backup code.'); return; }
+    setError('');
+    setLoading(true);
+    try {
+      const tempToken = localStorage.getItem('tempToken');
+      const payload = { tempToken, ...(useBackup ? { backupCode: backupCode.trim() } : { code }) };
+      const data = await authService.verify2fa(payload);
+      localStorage.removeItem('tempToken');
+      api.setToken(data.accessToken);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      router.push(role === 'admin' ? '/admin' : '/dashboard');
+    } catch (err) {
+      setError(err.message || 'Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    if (useBackup && backupCode.trim().length < 8) {
-      setError('Please enter a valid backup code.');
-      return;
-    }
-    // TODO: verify 2FA code via API
-    const redirectPath = role === 'admin' ? '/admin' : '/dashboard';
-    router.push(redirectPath);
   };
 
   return (
@@ -70,9 +79,9 @@ export default function Verify2FAPage() {
         <button
           type="submit"
           className={styles.submitBtn}
-          disabled={!useBackup && code.length < 6}
+          disabled={loading || (!useBackup && code.length < 6)}
         >
-          Verify &amp; Sign In
+          {loading ? 'Verifying…' : 'Verify & Sign In'}
         </button>
       </form>
 

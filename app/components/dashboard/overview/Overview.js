@@ -1,20 +1,46 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_JOBS, MOCK_SHORTLIST, MOCK_CONTRACTS, MOCK_ACTIVITY } from '@/app/lib/mockData';
 import styles from './Overview.module.css';
+import { jobService } from '@/app/lib/services/jobService';
+import { shortlistService } from '@/app/lib/services/shortlistService';
+import { contractService } from '@/app/lib/services/contractService';
+import { notificationService } from '@/app/lib/services/notificationService';
 
-const activeJobs = MOCK_JOBS.filter((j) => j.status === 'active').length;
-const shortlisted = MOCK_SHORTLIST.length;
-const activeContracts = MOCK_CONTRACTS.filter((c) => c.status === 'active').length;
-const pendingReviews = MOCK_CONTRACTS.filter((c) => c.status === 'completed').length;
-
-const STATS = [
-  { label: 'Active Jobs', value: activeJobs, color: '#4f46e5', bg: '#eef2ff', icon: BriefcaseIcon, href: '/dashboard/jobs' },
-  { label: 'Shortlisted', value: shortlisted, color: '#7c3aed', bg: '#f5f3ff', icon: StarIcon, href: '/dashboard/shortlist' },
-  { label: 'Active Contracts', value: activeContracts, color: '#059669', bg: '#d1fae5', icon: DocumentIcon, href: '/dashboard/contracts' },
-  { label: 'Pending Reviews', value: pendingReviews, color: '#d97706', bg: '#fef3c7', icon: ChartIcon, href: '/dashboard/performance' },
+const STAT_META = [
+  { label: 'Active Jobs', color: '#4f46e5', bg: '#eef2ff', icon: BriefcaseIcon, href: '/dashboard/jobs' },
+  { label: 'Shortlisted', color: '#7c3aed', bg: '#f5f3ff', icon: StarIcon, href: '/dashboard/shortlist' },
+  { label: 'Active Contracts', color: '#059669', bg: '#d1fae5', icon: DocumentIcon, href: '/dashboard/contracts' },
+  { label: 'Pending Reviews', color: '#d97706', bg: '#fef3c7', icon: ChartIcon, href: '/dashboard/performance' },
 ];
 
 export default function Overview() {
+  const [stats, setStats] = useState([0, 0, 0, 0]);
+  const [jobs, setJobs] = useState([]);
+  const [activity, setActivity] = useState([]);
+
+  useEffect(() => {
+    Promise.all([
+      jobService.list({ status: 'active', pageSize: 10 }).catch(() => ({ jobs: [] })),
+      shortlistService.list().catch(() => []),
+      contractService.list().catch(() => []),
+      notificationService.list({ pageSize: 5 }).catch(() => ({ notifications: [] })),
+    ]).then(([jobsData, shortlist, contracts, notifData]) => {
+      const activeJobs = jobsData?.jobs ?? [];
+      const allContracts = Array.isArray(contracts) ? contracts : [];
+      setJobs(activeJobs);
+      setStats([
+        activeJobs.length,
+        Array.isArray(shortlist) ? shortlist.length : 0,
+        allContracts.filter((c) => c.status === 'active').length,
+        allContracts.filter((c) => c.status === 'completed').length,
+      ]);
+      const notifs = notifData?.notifications ?? [];
+      setActivity(notifs.slice(0, 5).map((n) => ({ id: n.id, text: n.title, time: n.createdAt, color: n.actorColor || '#6366f1' })));
+    });
+  }, []);
+
   return (
     <div className={styles.page}>
       {/* Onboarding banner */}
@@ -31,13 +57,13 @@ export default function Overview() {
 
       {/* Stats */}
       <div className={styles.stats}>
-        {STATS.map((s) => (
+        {STAT_META.map((s, i) => (
           <Link key={s.label} href={s.href} className={styles.statCard}>
             <div className={styles.statIcon} style={{ background: s.bg, color: s.color }}>
               <s.icon />
             </div>
             <div>
-              <p className={styles.statValue}>{s.value}</p>
+              <p className={styles.statValue}>{stats[i]}</p>
               <p className={styles.statLabel}>{s.label}</p>
             </div>
           </Link>
@@ -72,12 +98,14 @@ export default function Overview() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Recent Activity</h2>
           <ul className={styles.activityList}>
-            {MOCK_ACTIVITY.map((a) => (
+            {activity.length === 0 ? (
+              <li className={styles.activityItem}><span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>No recent activity</span></li>
+            ) : activity.map((a) => (
               <li key={a.id} className={styles.activityItem}>
                 <span className={styles.activityDot} style={{ background: a.color }} />
                 <div>
                   <p className={styles.activityText}>{a.text}</p>
-                  <p className={styles.activityTime}>{a.time}</p>
+                  <p className={styles.activityTime}>{a.time ? new Date(a.time).toLocaleString() : ''}</p>
                 </div>
               </li>
             ))}
@@ -95,7 +123,7 @@ export default function Overview() {
           <div className={styles.jobTableHead}>
             <span>Title</span><span>Field</span><span>Applicants</span><span>Deadline</span><span>Status</span>
           </div>
-          {MOCK_JOBS.filter((j) => j.status === 'active').map((job) => (
+          {jobs.map((job) => (
             <div key={job.id} className={styles.jobTableRow}>
               <span className={styles.jobTitle}>{job.title}</span>
               <span className={styles.jobField}>{job.field}</span>

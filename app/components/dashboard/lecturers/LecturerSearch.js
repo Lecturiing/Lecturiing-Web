@@ -1,34 +1,60 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MOCK_LECTURERS, FIELDS, QUALIFICATIONS, COUNTRIES, TIMEZONES } from '@/app/lib/mockData';
 import styles from './LecturerSearch.module.css';
+import { lecturerService } from '@/app/lib/services/lecturerService';
+import { shortlistService } from '@/app/lib/services/shortlistService';
+
+const FIELDS = ['Computer Science', 'Mathematics', 'Business', 'Engineering', 'Medicine', 'Law', 'Arts & Humanities', 'Sciences', 'Education', 'Economics'];
+const QUALIFICATIONS = ["Bachelor's", "Master's / MSc", 'PhD', 'Professional Certificate'];
+const COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia', 'South Africa', 'Nigeria', 'India', 'Germany', 'France', 'Kenya'];
+const TIMEZONES = ['UTC-8 (PST)', 'UTC-5 (EST)', 'UTC+0 (GMT)', 'UTC+1 (WAT)', 'UTC+2 (SAST)', 'UTC+3 (EAT)', 'UTC+5:30 (IST)', 'UTC+8 (SGT)'];
 
 export default function LecturerSearch() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ field: '', qualification: '', country: '', timezone: '', maxRate: '', availability: '' });
-  const [shortlisted, setShortlisted] = useState(new Set(MOCK_LECTURERS.filter((l) => l.shortlisted).map((l) => l.id)));
+  const [lecturers, setLecturers] = useState([]);
+  const [shortlisted, setShortlisted] = useState(new Set());
   const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    lecturerService.search({})
+      .then((data) => {
+        const list = Array.isArray(data) ? data : (data?.lecturers ?? []);
+        setLecturers(list);
+        setShortlisted(new Set(list.filter((l) => l.shortlisted).map((l) => l.id)));
+      })
+      .catch(() => {});
+  }, []);
 
   const sf = (k) => (e) => setFilters((p) => ({ ...p, [k]: e.target.value }));
 
-  const results = useMemo(() => {
-    return MOCK_LECTURERS.filter((l) => {
-      if (search && !l.name.toLowerCase().includes(search.toLowerCase()) && !l.field.toLowerCase().includes(search.toLowerCase()) && !l.specializations.join(' ').toLowerCase().includes(search.toLowerCase())) return false;
-      if (filters.field && l.field !== filters.field) return false;
-      if (filters.qualification && l.qualification !== filters.qualification.replace("Master's / MSc", 'MSc')) return false;
-      if (filters.country && l.country !== filters.country) return false;
-      if (filters.timezone && l.timezone !== filters.timezone) return false;
-      if (filters.maxRate && l.rate > Number(filters.maxRate)) return false;
-      if (filters.availability && l.availability !== filters.availability) return false;
-      return true;
-    });
-  }, [search, filters]);
+  const results = lecturers.filter((l) => {
+    if (search && !l.name.toLowerCase().includes(search.toLowerCase()) &&
+        !(l.field ?? '').toLowerCase().includes(search.toLowerCase()) &&
+        !(l.specializations ?? []).join(' ').toLowerCase().includes(search.toLowerCase())) return false;
+    if (filters.field && l.field !== filters.field) return false;
+    if (filters.qualification && l.qualification !== filters.qualification) return false;
+    if (filters.country && l.country !== filters.country) return false;
+    if (filters.timezone && l.timezone !== filters.timezone) return false;
+    if (filters.maxRate && (l.hourlyRate ?? l.rate ?? 0) > Number(filters.maxRate)) return false;
+    if (filters.availability && l.availability !== filters.availability) return false;
+    return true;
+  });
 
-  const toggleShortlist = (id) => {
-    setShortlisted((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleShortlist = async (id) => {
+    const isShortlisted = shortlisted.has(id);
+    setShortlisted((prev) => { const n = new Set(prev); isShortlisted ? n.delete(id) : n.add(id); return n; });
+    try {
+      if (isShortlisted) {
+        const lecturer = lecturers.find((l) => l.id === id);
+        if (lecturer?.shortlistItemId) await shortlistService.remove(lecturer.shortlistItemId);
+      } else {
+        await shortlistService.add({ lecturerId: id });
+      }
+    } catch (_) {}
   };
 
   return (
@@ -99,7 +125,7 @@ export default function LecturerSearch() {
           {results.map((l) => (
             <div key={l.id} className={styles.card} onClick={() => setSelected(l)}>
               <div className={styles.cardTop}>
-                <div className={styles.avatar} style={{ background: l.color }}>{l.initials}</div>
+                <div className={styles.avatar} style={{ background: l.avatarColor ?? l.color }}>{l.initials}</div>
                 <div className={styles.cardInfo}>
                   <h3 className={styles.cardName}>{l.name}</h3>
                   <p className={styles.cardTitle}>{l.title}</p>
@@ -111,12 +137,12 @@ export default function LecturerSearch() {
                 <span className={styles.metaChip}>{l.availability}</span>
               </div>
               <div className={styles.cardTags}>
-                {l.specializations.slice(0, 3).map((s) => <span key={s} className={styles.tag}>{s}</span>)}
+                {(l.specializations ?? []).slice(0, 3).map((s) => <span key={s} className={styles.tag}>{s}</span>)}
               </div>
               <div className={styles.cardFooter}>
                 <div>
-                  <span className={styles.rate}>${l.rate}/hr</span>
-                  <span className={styles.rating}>★ {l.rating} ({l.reviews})</span>
+                  <span className={styles.rate}>${l.hourlyRate ?? l.rate}/hr</span>
+                  <span className={styles.rating}>★ {l.rating} ({l.reviewCount ?? l.reviews})</span>
                 </div>
                 <button className={`${styles.shortlistBtn} ${shortlisted.has(l.id) ? styles.shortlisted : ''}`}
                   onClick={(e) => { e.stopPropagation(); toggleShortlist(l.id); }}>
@@ -143,23 +169,23 @@ export default function LecturerSearch() {
                 <ExpandIcon />
               </button>
             </div>
-            <div className={styles.drawerAvatar} style={{ background: selected.color }}>{selected.initials}</div>
+            <div className={styles.drawerAvatar} style={{ background: selected.avatarColor ?? selected.color }}>{selected.initials}</div>
             <h2 className={styles.drawerName}>{selected.name}</h2>
             <p className={styles.drawerTitle}>{selected.title}</p>
             <div className={styles.drawerMeta}>
               <span>📍 {selected.country}</span>
               <span>🕐 {selected.timezone}</span>
               <span>🎓 {selected.qualification}</span>
-              <span>⏱ {selected.experience} yrs exp.</span>
+              <span>⏱ {selected.yearsExperience ?? selected.experience} yrs exp.</span>
             </div>
             <p className={styles.drawerBio}>{selected.bio}</p>
             <div className={styles.drawerTags}>
-              {selected.specializations.map((s) => <span key={s} className={styles.tag}>{s}</span>)}
+              {(selected.specializations ?? []).map((s) => <span key={s} className={styles.tag}>{s}</span>)}
             </div>
             <div className={styles.drawerFooter}>
               <div>
-                <p className={styles.drawerRate}>${selected.rate}/hr</p>
-                <p className={styles.drawerRating}>★ {selected.rating} ({selected.reviews} reviews)</p>
+                <p className={styles.drawerRate}>${selected.hourlyRate ?? selected.rate}/hr</p>
+                <p className={styles.drawerRating}>★ {selected.rating} ({selected.reviewCount ?? selected.reviews} reviews)</p>
               </div>
               <button className={`${styles.shortlistBtn} ${shortlisted.has(selected.id) ? styles.shortlisted : ''}`}
                 onClick={() => toggleShortlist(selected.id)}>

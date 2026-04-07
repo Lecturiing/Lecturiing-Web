@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_OFFERS, MOCK_CONTRACT_DOCS, MOCK_JOB_DOCS, MOCK_LECTURERS } from '@/app/lib/mockData';
+import { useState, useEffect } from 'react';
 import styles from './OffersPage.module.css';
+import { offerService } from '@/app/lib/services/offerService';
+import { documentService } from '@/app/lib/services/documentService';
 
 const STATUS_TABS = ['All', 'Pending', 'Approved', 'Declined'];
 const TAB_MAP = { All: null, Pending: 'pending', Approved: 'approved', Declined: 'declined' };
@@ -14,20 +15,31 @@ const STATUS_META = {
 };
 
 export default function OffersPage() {
-  const [offers, setOffers] = useState(MOCK_OFFERS);
+  const [offers, setOffers] = useState([]);
   const [tab, setTab] = useState('All');
-  const [sendModal, setSendModal] = useState(null); // offer object
+  const [sendModal, setSendModal] = useState(null);
   const [selectedDocs, setSelectedDocs] = useState([]);
-  const [sentState, setSentState] = useState({}); // offerId → sentDocs
+  const [sentState, setSentState] = useState({});
+  const [availableDocs, setAvailableDocs] = useState([]);
 
-  const updateOfferStatus = (id, status) => {
+  useEffect(() => {
+    offerService.list()
+      .then((data) => setOffers(Array.isArray(data) ? data : []))
+      .catch(() => {});
+    documentService.list()
+      .then((data) => setAvailableDocs(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  const updateOfferStatus = async (id, status) => {
+    try { await offerService.updateStatus(id, status); } catch (_) {}
     setOffers((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
   };
 
   const openSendModal = (offer) => {
-    const jobDocs = MOCK_JOB_DOCS[offer.jobId] ?? [];
+    const jobDocs = offer.sentDocumentIds ?? [];
     setSendModal(offer);
-    setSelectedDocs(jobDocs); // pre-select all linked docs
+    setSelectedDocs(jobDocs);
   };
 
   const toggleDoc = (docId) => {
@@ -36,8 +48,9 @@ export default function OffersPage() {
     );
   };
 
-  const sendDocs = () => {
+  const sendDocs = async () => {
     if (!sendModal || selectedDocs.length === 0) return;
+    try { await offerService.sendDocuments(sendModal.id, selectedDocs); } catch (_) {}
     setSentState((prev) => ({ ...prev, [sendModal.id]: selectedDocs }));
     setSendModal(null);
     setSelectedDocs([]);
@@ -70,10 +83,8 @@ export default function OffersPage() {
         {filtered.length === 0 && <p className={styles.empty}>No offers in this category.</p>}
         {filtered.map((offer) => {
           const sm = STATUS_META[offer.status];
-          const lecturer = MOCK_LECTURERS.find((l) => l.id === offer.lecturerId);
-          const jobDocIds = MOCK_JOB_DOCS[offer.jobId] ?? [];
-          const sent = sentState[offer.id] ?? offer.sentDocs;
-          const signed = offer.signedDocs;
+          const sent = sentState[offer.id] ?? offer.sentDocumentIds ?? [];
+          const signed = offer.signedDocumentIds ?? [];
           const allSigned = sent.length > 0 && sent.every((d) => signed.includes(d));
 
           return (
@@ -86,13 +97,11 @@ export default function OffersPage() {
                 <div className={styles.cardInfo}>
                   <h3 className={styles.cardName}>{offer.lecturerName}</h3>
                   <p className={styles.cardJob}>{offer.jobTitle}</p>
-                  {lecturer && (
+                  {(offer.country || offer.qualification || offer.rating) && (
                     <div className={styles.cardMeta}>
-                      <span>{lecturer.country}</span>
-                      <span>·</span>
-                      <span>{lecturer.qualification}</span>
-                      <span>·</span>
-                      <span>★ {lecturer.rating}</span>
+                      {offer.country && <span>{offer.country}</span>}
+                      {offer.qualification && <><span>·</span><span>{offer.qualification}</span></>}
+                      {offer.rating && <><span>·</span><span>★ {offer.rating}</span></>}
                     </div>
                   )}
                 </div>
@@ -146,12 +155,11 @@ export default function OffersPage() {
                   {sent.length > 0 && (
                     <div className={styles.docList}>
                       {sent.map((docId) => {
-                        const doc = MOCK_CONTRACT_DOCS.find((d) => d.id === docId);
-                        if (!doc) return null;
+                        const doc = availableDocs.find((d) => d.id === docId);
                         const isSigned = signed.includes(docId);
                         return (
                           <div key={docId} className={styles.docRow}>
-                            <span className={styles.docName}>{doc.title}</span>
+                            <span className={styles.docName}>{doc?.title ?? docId}</span>
                             <span className={`${styles.docStatus} ${isSigned ? styles.docSigned : styles.docPending}`}>
                               {isSigned ? '✓ Signed' : '⏳ Pending'}
                             </span>
@@ -159,12 +167,6 @@ export default function OffersPage() {
                         );
                       })}
                     </div>
-                  )}
-
-                  {sent.length === 0 && jobDocIds.length > 0 && (
-                    <p className={styles.noDocsNote}>
-                      {jobDocIds.length} document{jobDocIds.length !== 1 ? 's' : ''} linked to this job. Click "Send for E-Signature" to select and send.
-                    </p>
                   )}
                 </div>
               )}
@@ -175,8 +177,6 @@ export default function OffersPage() {
 
       {/* ── Send Documents Modal ── */}
       {sendModal && (() => {
-        const jobDocIds = MOCK_JOB_DOCS[sendModal.jobId] ?? [];
-        const allJobDocs = MOCK_CONTRACT_DOCS.filter((d) => jobDocIds.includes(d.id));
         return (
           <div className={styles.modalOverlay} onClick={() => setSendModal(null)}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -189,10 +189,10 @@ export default function OffersPage() {
               </p>
 
               <div className={styles.modalDocList}>
-                {allJobDocs.length === 0 && (
-                  <p className={styles.noDocsNote}>No documents are linked to this job. Add documents via the Doc Library and link them in the job settings.</p>
+                {availableDocs.length === 0 && (
+                  <p className={styles.noDocsNote}>No documents in library. Add documents via the Doc Library first.</p>
                 )}
-                {allJobDocs.map((doc) => (
+                {availableDocs.map((doc) => (
                   <label key={doc.id} className={`${styles.modalDocRow} ${selectedDocs.includes(doc.id) ? styles.modalDocSelected : ''}`}>
                     <input
                       type="checkbox"

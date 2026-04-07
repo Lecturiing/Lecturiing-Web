@@ -2,8 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FIELDS, COUNTRIES, CONTRACT_TYPES } from '@/app/lib/mockData';
 import styles from './OnboardingWizard.module.css';
+import { onboardingService } from '@/app/lib/services/onboardingService';
+
+const FIELDS = ['Computer Science', 'Mathematics', 'Business', 'Engineering', 'Medicine', 'Law', 'Arts & Humanities', 'Sciences', 'Education', 'Economics'];
+const COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia', 'South Africa', 'Nigeria', 'India', 'Germany', 'France', 'Kenya'];
+const CONTRACT_TYPES = ['Full-time', 'Part-time', 'Short-term', 'Per-session', 'Retainer'];
 
 const STEPS = ['Institution Profile', 'Location & Contact', 'Hiring Preferences', 'Review & Complete'];
 
@@ -26,8 +30,10 @@ export default function OnboardingWizard() {
       [field]: p[field].includes(val) ? p[field].filter((x) => x !== val) : [...p[field], val],
     }));
 
-  const handleComplete = () => {
-    // TODO: submit to API
+  const handleComplete = async () => {
+    try {
+      await onboardingService.saveStep(4, data);
+    } catch (_) {}
     router.push('/dashboard');
   };
 

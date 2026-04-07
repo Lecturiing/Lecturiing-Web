@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,21 +8,45 @@ import logo from '@/app/assets/Frame 36712.png';
 import FlowCard from '../shared/FlowCard';
 import OtpInput from '../shared/OtpInput';
 import styles from './Setup2FAPage.module.css';
-
-// Placeholder secret — in production this comes from the backend TOTP setup API
-const PLACEHOLDER_SECRET = 'LCTR-ING2-FA4S-ECRE';
+import { authService } from '@/app/lib/services/authService';
+import api from '@/app/lib/api';
 
 export default function Setup2FAPage() {
   const router = useRouter();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const [step, setStep] = useState('scan'); // 'scan' | 'verify'
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState('scan');
+  const [secret, setSecret] = useState('LCTR-ING2-FA4S-ECRE');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [backupCodes, setBackupCodes] = useState([]);
 
-  const handleEnable = (e) => {
+  useEffect(() => {
+    authService.setup2fa()
+      .then((data) => {
+        if (data?.secret) setSecret(data.secret);
+        if (data?.qrCodeUrl) setQrCodeUrl(data.qrCodeUrl);
+        if (data?.backupCodes) setBackupCodes(data.backupCodes);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleEnable = async (e) => {
     e.preventDefault();
     if (code.length < 6) { setError('Enter the 6-digit code from your authenticator app.'); return; }
-    // TODO: verify TOTP code via API
-    router.push('/dashboard');
+    setError('');
+    setLoading(true);
+    try {
+      const data = await authService.confirm2fa({ code });
+      api.setToken(data.accessToken);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      if (backupCodes.length > 0) localStorage.setItem('backupCodes', JSON.stringify(backupCodes));
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Invalid code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,24 +75,38 @@ export default function Setup2FAPage() {
       <div className={styles.qrSection}>
         <p className={styles.stepLabel}>Step 1 — Scan with your authenticator app</p>
         <div className={styles.qrFrame}>
-          <QrPlaceholder />
+          {qrCodeUrl
+            ? <div className={styles.qrContainer}><img src={qrCodeUrl} alt="2FA QR Code" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>
+            : <QrPlaceholder />
+          }
           <p className={styles.qrHint}>Google Authenticator · Authy · Microsoft Authenticator</p>
         </div>
 
         <div className={styles.secretRow}>
           <p className={styles.secretLabel}>Or enter this key manually:</p>
           <div className={styles.secretBox}>
-            <code className={styles.secretCode}>{PLACEHOLDER_SECRET}</code>
+            <code className={styles.secretCode}>{secret}</code>
             <button
               type="button"
               className={styles.copyBtn}
-              onClick={() => navigator.clipboard?.writeText(PLACEHOLDER_SECRET)}
+              onClick={() => navigator.clipboard?.writeText(secret)}
               title="Copy secret key"
             >
               <CopyIcon />
             </button>
           </div>
         </div>
+
+        {backupCodes.length > 0 && (
+          <div className={styles.secretRow} style={{ marginTop: 12 }}>
+            <p className={styles.secretLabel}>Save your backup codes (shown once):</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {backupCodes.map((c) => (
+                <code key={c} className={styles.secretCode} style={{ fontSize: '0.75rem' }}>{c}</code>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Step 2: Verify */}
@@ -80,9 +118,9 @@ export default function Setup2FAPage() {
           <button
             type="submit"
             className={styles.submitBtn}
-            disabled={code.length < 6}
+            disabled={code.length < 6 || loading}
           >
-            Enable 2FA &amp; Continue
+            {loading ? 'Enabling…' : 'Enable 2FA & Continue'}
           </button>
         </form>
       </div>

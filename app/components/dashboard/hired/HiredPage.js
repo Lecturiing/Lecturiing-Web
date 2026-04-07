@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_HIRED, MOCK_CONTRACT_DOCS, MOCK_LECTURERS } from '@/app/lib/mockData';
+import { useState, useEffect } from 'react';
 import styles from './HiredPage.module.css';
+import { hiredService } from '@/app/lib/services/hiredService';
+import { documentService } from '@/app/lib/services/documentService';
 
 const STATUS_META = {
   active:        { label: 'Active',         bg: '#d1fae5', color: '#059669' },
@@ -11,8 +12,19 @@ const STATUS_META = {
 };
 
 export default function HiredPage() {
+  const [hiredList, setHiredList] = useState([]);
+  const [allDocs, setAllDocs] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [viewDoc, setViewDoc] = useState(null);
+
+  useEffect(() => {
+    hiredService.list()
+      .then((data) => setHiredList(Array.isArray(data) ? data : []))
+      .catch(() => {});
+    documentService.list()
+      .then((data) => setAllDocs(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
 
   const toggle = (id) => setExpanded((prev) => (prev === id ? null : id));
 
@@ -21,16 +33,16 @@ export default function HiredPage() {
       {/* ── Summary ── */}
       <div className={styles.summary}>
         <div className={styles.summaryCard}>
-          <span className={styles.summaryNum}>{MOCK_HIRED.length}</span>
+          <span className={styles.summaryNum}>{hiredList.length}</span>
           <span className={styles.summaryLabel}>Total Hired</span>
         </div>
         <div className={styles.summaryCard}>
-          <span className={styles.summaryNum}>{MOCK_HIRED.filter((h) => h.status === 'active').length}</span>
+          <span className={styles.summaryNum}>{hiredList.filter((h) => h.status === 'active').length}</span>
           <span className={styles.summaryLabel}>Currently Active</span>
         </div>
         <div className={styles.summaryCard}>
           <span className={styles.summaryNum}>
-            {MOCK_HIRED.reduce((acc, h) => acc + h.signedDocs.length, 0)}
+            {hiredList.reduce((acc, h) => acc + (h.signedDocumentIds?.length ?? 0), 0)}
           </span>
           <span className={styles.summaryLabel}>Signed Documents</span>
         </div>
@@ -38,17 +50,16 @@ export default function HiredPage() {
 
       {/* ── Hired List ── */}
       <div className={styles.list}>
-        {MOCK_HIRED.length === 0 && (
+        {hiredList.length === 0 && (
           <div className={styles.empty}>
             <p>No hired lecturers yet.</p>
             <p className={styles.emptyNote}>Once a candidate signs their contract documents, they will appear here.</p>
           </div>
         )}
 
-        {MOCK_HIRED.map((hire) => {
-          const lecturer = MOCK_LECTURERS.find((l) => l.id === hire.lecturerId);
+        {hiredList.map((hire) => {
           const sm = STATUS_META[hire.status] ?? STATUS_META.completed;
-          const signedDocs = MOCK_CONTRACT_DOCS.filter((d) => hire.signedDocs.includes(d.id));
+          const signedDocs = allDocs.filter((d) => (hire.signedDocumentIds ?? []).includes(d.id));
           const isOpen = expanded === hire.id;
 
           return (
@@ -64,21 +75,17 @@ export default function HiredPage() {
                     <span className={styles.statusBadge} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>
                   </div>
                   <p className={styles.jobTitle}>{hire.jobTitle}</p>
-                  {lecturer && (
-                    <div className={styles.metaRow}>
-                      <span>📍 {lecturer.country}</span>
-                      <span>·</span>
-                      <span>🎓 {lecturer.qualification}</span>
-                      <span>·</span>
+                  <div className={styles.metaRow}>
+                      {hire.country && <><span>📍 {hire.country}</span><span>·</span></>}
+                      {hire.qualification && <><span>🎓 {hire.qualification}</span><span>·</span></>}
                       <span>⚡ {hire.contractType}</span>
                       <span>·</span>
-                      <span className={styles.rateChip}>${hire.rate}/hr</span>
+                      <span className={styles.rateChip}>${hire.hourlyRate}/hr</span>
                     </div>
-                  )}
                 </div>
                 <div className={styles.headerRight}>
                   <div className={styles.signedCount}>
-                    <span className={styles.signedNum}>{hire.signedDocs.length}</span>
+                    <span className={styles.signedNum}>{(hire.signedDocumentIds ?? []).length}</span>
                     <span className={styles.signedLabel}>docs signed</span>
                   </div>
                   <span className={styles.chevron}>{isOpen ? '▲' : '▼'}</span>

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_SHORTLIST } from '@/app/lib/mockData';
+import { useState, useEffect } from 'react';
 import styles from './ShortlistPage.module.css';
+import { shortlistService } from '@/app/lib/services/shortlistService';
 
 const STATUS_MAP = {
   new: { label: 'New', bg: '#f3f4f6', color: '#6b7280' },
@@ -27,13 +27,21 @@ function CalendlyEmbed({ url }) {
 }
 
 export default function ShortlistPage() {
-  const [items, setItems] = useState(MOCK_SHORTLIST);
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    shortlistService.list()
+      .then((data) => setItems(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
   const [scheduleFor, setScheduleFor] = useState(null); // shortlist item
   const [calendlyUrl, setCalendlyUrl] = useState('');
   const [showCalendlyInput, setShowCalendlyInput] = useState(false);
 
-  const updateStatus = (id, status) =>
+  const updateStatus = async (id, status) => {
+    try { await shortlistService.update(id, { status }); } catch (_) {}
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
+  };
 
   const openSchedule = (item) => {
     setScheduleFor(item);

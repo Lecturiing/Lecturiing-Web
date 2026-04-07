@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_LECTURERS } from '@/app/lib/mockData';
 import styles from './LecturersPage.module.css';
+import { adminService } from '@/app/lib/services/adminService';
 
 const TABS = ['All', 'Pending Approval', 'Active', 'Suspended'];
 
@@ -21,8 +21,14 @@ const APPROVAL_COLORS = {
 
 export default function LecturersPage() {
   const [activeTab, setActiveTab] = useState('All');
-  const [lecturers, setLecturers] = useState(MOCK_LECTURERS);
+  const [lecturers, setLecturers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    adminService.listLecturers()
+      .then((data) => setLecturers(Array.isArray(data) ? data : (data?.lecturers ?? [])))
+      .catch(() => {});
+  }, []);
 
   const filterByTab = (tab) => {
     if (tab === 'All') return lecturers;
@@ -33,24 +39,22 @@ export default function LecturersPage() {
   };
 
   const filtered = filterByTab(activeTab).filter((lec) =>
-    lec.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lec.field.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lec.country.toLowerCase().includes(searchQuery.toLowerCase())
+    (lec.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (lec.field ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (lec.country ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const pendingCount = lecturers.filter((l) => l.approvalStatus === 'pending').length;
   const suspendedCount = lecturers.filter((l) => l.accountStatus === 'suspended').length;
 
-  const handleApprove = (id) => {
-    setLecturers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, approvalStatus: 'approved' } : l))
-    );
+  const handleApprove = async (id) => {
+    try { await adminService.updateLecturerApproval(id, 'approved'); } catch (_) {}
+    setLecturers((prev) => prev.map((l) => l.id === id ? { ...l, approvalStatus: 'approved' } : l));
   };
 
-  const handleReject = (id) => {
-    setLecturers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, approvalStatus: 'rejected' } : l))
-    );
+  const handleReject = async (id) => {
+    try { await adminService.updateLecturerApproval(id, 'rejected'); } catch (_) {}
+    setLecturers((prev) => prev.map((l) => l.id === id ? { ...l, approvalStatus: 'rejected' } : l));
   };
 
   return (
@@ -129,10 +133,7 @@ export default function LecturersPage() {
                   <tr key={lec.id} className={styles.row}>
                     <td>
                       <div className={styles.lecturerCell}>
-                        <div
-                          className={styles.lecturerAvatar}
-                          style={{ background: lec.color }}
-                        >
+                        <div className={styles.lecturerAvatar} style={{ background: lec.avatarColor ?? lec.color }}>
                           {lec.initials}
                         </div>
                         <div className={styles.lecturerInfo}>
@@ -144,20 +145,14 @@ export default function LecturersPage() {
                     <td>{lec.field}</td>
                     <td>{lec.qualification}</td>
                     <td>{lec.country}</td>
-                    <td className={styles.rate}>${lec.rate}/hr</td>
+                    <td className={styles.rate}>${lec.hourlyRate ?? lec.rate}/hr</td>
                     <td>
-                      <span
-                        className={styles.statusBadge}
-                        style={{ background: statusStyle.bg, color: statusStyle.text }}
-                      >
+                      <span className={styles.statusBadge} style={{ background: statusStyle.bg, color: statusStyle.text }}>
                         {lec.accountStatus}
                       </span>
                     </td>
                     <td>
-                      <span
-                        className={styles.approvalBadge}
-                        style={{ background: approvalStyle.bg, color: approvalStyle.text }}
-                      >
+                      <span className={styles.approvalBadge} style={{ background: approvalStyle.bg, color: approvalStyle.text }}>
                         {lec.approvalStatus}
                       </span>
                     </td>
@@ -166,29 +161,11 @@ export default function LecturersPage() {
                       <div className={styles.actionBtns}>
                         {lec.approvalStatus === 'pending' && (
                           <>
-                            <button
-                              className={styles.approveBtn}
-                              onClick={() => handleApprove(lec.id)}
-                              title="Approve"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              className={styles.rejectBtn}
-                              onClick={() => handleReject(lec.id)}
-                              title="Reject"
-                            >
-                              ✕
-                            </button>
+                            <button className={styles.approveBtn} onClick={() => handleApprove(lec.id)} title="Approve">✓</button>
+                            <button className={styles.rejectBtn} onClick={() => handleReject(lec.id)} title="Reject">✕</button>
                           </>
                         )}
-                        <Link
-                          href={`/admin/lecturers/${lec.id}`}
-                          className={styles.viewBtn}
-                          title="View Details"
-                        >
-                          →
-                        </Link>
+                        <Link href={`/admin/lecturers/${lec.id}`} className={styles.viewBtn} title="View Details">→</Link>
                       </div>
                     </td>
                   </tr>

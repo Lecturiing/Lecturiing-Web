@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MOCK_APPLICANTS, MOCK_LECTURERS, MOCK_JOBS, MOCK_LECTURER_DETAILS } from '@/app/lib/mockData';
 import styles from './ApplicantsPage.module.css';
+import { jobService } from '@/app/lib/services/jobService';
+import { applicationService } from '@/app/lib/services/applicationService';
+import { lecturerService } from '@/app/lib/services/lecturerService';
 
 const STATUS_TABS = ['All', 'Pending', 'Shortlisted', 'Interview', 'Declined', 'Offer Sent'];
 
@@ -27,16 +29,28 @@ const TAB_STATUS_MAP = {
 
 export default function ApplicantsPage({ jobId }) {
   const router = useRouter();
-  const job = MOCK_JOBS.find((j) => j.id === jobId);
-  const baseApplicants = MOCK_APPLICANTS.filter((a) => a.jobId === jobId).map((a) => ({
-    ...a,
-    lecturer: MOCK_LECTURERS.find((l) => l.id === a.lecturerId),
-  }));
-
-  const [applicants, setApplicants] = useState(baseApplicants);
+  const [job, setJob] = useState(null);
+  const [applicants, setApplicants] = useState([]);
   const [tab, setTab] = useState('All');
   const [selected, setSelected] = useState(null);
+  const [selectedDetails, setSelectedDetails] = useState(null);
   const [expandedSection, setExpandedSection] = useState('about');
+
+  useEffect(() => {
+    jobService.get(jobId).then((data) => setJob(data)).catch(() => {});
+    jobService.getApplicants(jobId)
+      .then((data) => setApplicants(Array.isArray(data) ? data : (data?.applicants ?? [])))
+      .catch(() => {});
+  }, [jobId]);
+
+  useEffect(() => {
+    if (!selected) { setSelectedDetails(null); return; }
+    const lecturerId = selected.lecturerId ?? selected.lecturer?.id;
+    if (!lecturerId) return;
+    lecturerService.get(lecturerId)
+      .then((data) => setSelectedDetails(data))
+      .catch(() => setSelectedDetails(null));
+  }, [selected]);
 
   const filtered = applicants.filter((a) => {
     const statusFilter = TAB_STATUS_MAP[tab];
@@ -49,14 +63,11 @@ export default function ApplicantsPage({ jobId }) {
     return acc;
   }, {});
 
-  const updateStatus = (appId, newStatus) => {
+  const updateStatus = async (appId, newStatus) => {
+    try { await applicationService.updateStatus(appId, newStatus); } catch (_) {}
     setApplicants((prev) => prev.map((a) => a.id === appId ? { ...a, status: newStatus } : a));
     if (selected?.id === appId) setSelected((s) => ({ ...s, status: newStatus }));
   };
-
-  if (!job) return <div className={styles.notFound}>Job not found. <Link href="/dashboard/jobs">Back to jobs</Link></div>;
-
-  const details = selected ? MOCK_LECTURER_DETAILS[selected.lecturerId] : null;
 
   return (
     <div className={styles.page}>
@@ -64,24 +75,26 @@ export default function ApplicantsPage({ jobId }) {
       <div className={styles.breadcrumb}>
         <Link href="/dashboard/jobs" className={styles.breadcrumbLink}>Job Postings</Link>
         <span className={styles.breadcrumbSep}>›</span>
-        <span className={styles.breadcrumbCurrent}>{job.title}</span>
+        <span className={styles.breadcrumbCurrent}>{job?.title ?? '…'}</span>
         <span className={styles.breadcrumbSep}>›</span>
         <span className={styles.breadcrumbCurrent}>Applicants</span>
       </div>
 
       {/* ── Job Summary ── */}
-      <div className={styles.jobSummary}>
-        <div>
-          <h1 className={styles.jobTitle}>{job.title}</h1>
-          <div className={styles.jobMeta}>
-            <span>{job.field}</span><span>·</span>
-            <span>{job.contractType}</span><span>·</span>
-            <span>{job.duration}</span><span>·</span>
-            <span className={styles.budget}>${job.budgetMin}–${job.budgetMax}/mo</span>
+      {job && (
+        <div className={styles.jobSummary}>
+          <div>
+            <h1 className={styles.jobTitle}>{job.title}</h1>
+            <div className={styles.jobMeta}>
+              <span>{job.field}</span><span>·</span>
+              <span>{job.contractType}</span><span>·</span>
+              <span>{job.duration}</span><span>·</span>
+              <span className={styles.budget}>${job.budgetMin}–${job.budgetMax}/mo</span>
+            </div>
           </div>
+          <div className={styles.totalBadge}>{applicants.length} Applicants</div>
         </div>
-        <div className={styles.totalBadge}>{applicants.length} Applicants</div>
-      </div>
+      )}
 
       {/* ── Tabs ── */}
       <div className={styles.tabs}>
@@ -103,15 +116,14 @@ export default function ApplicantsPage({ jobId }) {
           <p className={styles.empty}>No applicants in this category.</p>
         )}
         {filtered.map((app) => {
-          const lec = app.lecturer;
+          const lec = app.lecturer ?? app;
           if (!lec) return null;
           const sm = STATUS_META[app.status] ?? STATUS_META.pending;
 
           return (
             <div key={app.id} className={`${styles.row} ${app.status === 'declined' ? styles.rowDeclined : ''}`}>
-              {/* Avatar + Info */}
               <div className={styles.rowLeft} onClick={() => setSelected(app)}>
-                <div className={styles.avatar} style={{ background: lec.color }}>{lec.initials}</div>
+                <div className={styles.avatar} style={{ background: lec.avatarColor ?? lec.color }}>{lec.initials}</div>
                 <div className={styles.rowInfo}>
                   <p className={styles.rowName}>{lec.name}</p>
                   <p className={styles.rowTitle}>{lec.title}</p>
@@ -122,18 +134,17 @@ export default function ApplicantsPage({ jobId }) {
                     <span>·</span>
                     <span>★ {lec.rating}</span>
                     <span>·</span>
-                    <span>${lec.rate}/hr</span>
+                    <span>${lec.hourlyRate ?? lec.rate}/hr</span>
                   </div>
                 </div>
               </div>
 
-              {/* Status + Date + Actions */}
               <div className={styles.rowRight}>
                 <span className={styles.statusBadge} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>
                 <span className={styles.appliedDate}>Applied {app.appliedAt}</span>
                 {app.interviewDate && (
                   <span className={styles.interviewDate}>
-                    📅 {new Date(app.interviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    📅 {new Date(app.interviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </span>
                 )}
                 <div className={styles.actions}>
@@ -164,64 +175,63 @@ export default function ApplicantsPage({ jobId }) {
       </div>
 
       {/* ── Profile Drawer ── */}
-      {selected && selected.lecturer && (
+      {selected && (
         <div className={styles.overlay} onClick={() => setSelected(null)}>
           <div className={styles.drawer} onClick={(e) => e.stopPropagation()}>
-            {/* Drawer top bar */}
             <div className={styles.drawerTopBar}>
               <button className={styles.drawerClose} onClick={() => setSelected(null)}>✕</button>
               <button
                 className={styles.drawerExpand}
                 title="View full profile"
-                onClick={() => router.push(`/dashboard/lecturers/${selected.lecturerId}`)}
+                onClick={() => router.push(`/dashboard/lecturers/${selected.lecturerId ?? selected.lecturer?.id}`)}
               >
                 <ExpandIcon />
               </button>
             </div>
 
-            {/* Header */}
-            <div className={styles.drawerAvatar} style={{ background: selected.lecturer.color }}>
-              {selected.lecturer.initials}
-            </div>
-            <div>
-              <h2 className={styles.drawerName}>{selected.lecturer.name}</h2>
-              <p className={styles.drawerTitle}>{selected.lecturer.title}</p>
-            </div>
-            <div className={styles.drawerMeta}>
-              <span>📍 {selected.lecturer.country}</span>
-              <span>🕐 {selected.lecturer.timezone}</span>
-              <span>🎓 {selected.lecturer.qualification}</span>
-              <span>⏱ {selected.lecturer.experience} yrs</span>
-            </div>
-
-            {/* Status badge */}
             {(() => {
-              const sm = STATUS_META[selected.status] ?? STATUS_META.pending;
+              const lec = selected.lecturer ?? selected;
               return (
-                <span className={styles.drawerStatus} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>
+                <>
+                  <div className={styles.drawerAvatar} style={{ background: lec.avatarColor ?? lec.color }}>{lec.initials}</div>
+                  <div>
+                    <h2 className={styles.drawerName}>{lec.name}</h2>
+                    <p className={styles.drawerTitle}>{lec.title}</p>
+                  </div>
+                  <div className={styles.drawerMeta}>
+                    <span>📍 {lec.country}</span>
+                    <span>🕐 {lec.timezone}</span>
+                    <span>🎓 {lec.qualification}</span>
+                    <span>⏱ {lec.yearsExperience ?? lec.experience} yrs</span>
+                  </div>
+                </>
               );
             })()}
 
-            {/* Collapsible Sections */}
+            {(() => {
+              const sm = STATUS_META[selected.status] ?? STATUS_META.pending;
+              return <span className={styles.drawerStatus} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>;
+            })()}
+
             <DrawerSection
               title="About"
               open={expandedSection === 'about'}
               onToggle={() => setExpandedSection(expandedSection === 'about' ? null : 'about')}
             >
-              <p className={styles.drawerBio}>{selected.lecturer.bio}</p>
+              <p className={styles.drawerBio}>{(selected.lecturer ?? selected).bio}</p>
               <div className={styles.drawerTags}>
-                {selected.lecturer.specializations.map((s) => <span key={s} className={styles.tag}>{s}</span>)}
+                {((selected.lecturer ?? selected).specializations ?? []).map((s) => <span key={s} className={styles.tag}>{s}</span>)}
               </div>
             </DrawerSection>
 
-            {details && (
+            {selectedDetails && (
               <>
                 <DrawerSection
                   title="Experience"
                   open={expandedSection === 'exp'}
                   onToggle={() => setExpandedSection(expandedSection === 'exp' ? null : 'exp')}
                 >
-                  {details.experience.map((e, i) => (
+                  {(selectedDetails.workExperience ?? selectedDetails.experience ?? []).map((e, i) => (
                     <div key={i} className={styles.expItem}>
                       <p className={styles.expRole}>{e.role}</p>
                       <p className={styles.expInst}>{e.institution || 'Self-employed'} · {e.period}</p>
@@ -235,7 +245,7 @@ export default function ApplicantsPage({ jobId }) {
                   open={expandedSection === 'edu'}
                   onToggle={() => setExpandedSection(expandedSection === 'edu' ? null : 'edu')}
                 >
-                  {details.education.map((e, i) => (
+                  {(selectedDetails.education ?? []).map((e, i) => (
                     <div key={i} className={styles.eduItem}>
                       <p className={styles.eduDeg}>{e.degree}</p>
                       <p className={styles.eduInst}>{e.institution} · {e.year}</p>
@@ -248,7 +258,7 @@ export default function ApplicantsPage({ jobId }) {
                   open={expandedSection === 'port'}
                   onToggle={() => setExpandedSection(expandedSection === 'port' ? null : 'port')}
                 >
-                  {details.portfolio.map((p, i) => (
+                  {(selectedDetails.portfolio ?? []).map((p, i) => (
                     <div key={i} className={styles.portItem}>
                       <span className={styles.portType}>{p.type}</span>
                       <p className={styles.portTitle}>{p.title}</p>
@@ -259,7 +269,6 @@ export default function ApplicantsPage({ jobId }) {
               </>
             )}
 
-            {/* Drawer Actions */}
             <div className={styles.drawerActions}>
               {selected.status === 'pending' && (
                 <>

@@ -1,52 +1,59 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_INSTITUTIONS, MOCK_LECTURERS } from '@/app/lib/mockData';
 import styles from './ModerationPage.module.css';
+import { adminService } from '@/app/lib/services/adminService';
 
 const TABS = ['Institutions', 'Lecturers'];
 
 export default function ModerationPage() {
   const [activeTab, setActiveTab] = useState('Institutions');
-  const [institutions, setInstitutions] = useState(MOCK_INSTITUTIONS);
-  const [lecturers, setLecturers] = useState(MOCK_LECTURERS);
+  const [institutions, setInstitutions] = useState([]);
+  const [lecturers, setLecturers] = useState([]);
   const [confirmModal, setConfirmModal] = useState(null);
 
-  const handleSuspendInstitution = (id) => {
-    setInstitutions((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, status: 'suspended' } : i))
-    );
+  useEffect(() => {
+    adminService.listInstitutions()
+      .then((data) => setInstitutions(Array.isArray(data) ? data : (data?.institutions ?? [])))
+      .catch(() => {});
+    adminService.listLecturers()
+      .then((data) => setLecturers(Array.isArray(data) ? data : (data?.lecturers ?? [])))
+      .catch(() => {});
+  }, []);
+
+  const handleSuspendInstitution = async (id) => {
+    try { await adminService.updateInstitutionStatus(id, 'suspended'); } catch (_) {}
+    setInstitutions((prev) => prev.map((i) => (i.id === id ? { ...i, status: 'suspended' } : i)));
     setConfirmModal(null);
   };
 
-  const handleReactivateInstitution = (id) => {
-    setInstitutions((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, status: 'active' } : i))
-    );
+  const handleReactivateInstitution = async (id) => {
+    try { await adminService.updateInstitutionStatus(id, 'active'); } catch (_) {}
+    setInstitutions((prev) => prev.map((i) => (i.id === id ? { ...i, status: 'active' } : i)));
     setConfirmModal(null);
   };
 
-  const handleDeleteInstitution = (id) => {
+  const handleDeleteInstitution = async (id) => {
+    try { await adminService.updateInstitutionStatus(id, 'deleted'); } catch (_) {}
     setInstitutions((prev) => prev.filter((i) => i.id !== id));
     setConfirmModal(null);
   };
 
-  const handleSuspendLecturer = (id) => {
-    setLecturers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, accountStatus: 'suspended' } : l))
-    );
+  const handleSuspendLecturer = async (id) => {
+    try { await adminService.updateLecturerStatus(id, 'suspended'); } catch (_) {}
+    setLecturers((prev) => prev.map((l) => (l.id === id ? { ...l, accountStatus: 'suspended' } : l)));
     setConfirmModal(null);
   };
 
-  const handleReactivateLecturer = (id) => {
-    setLecturers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, accountStatus: 'active' } : l))
-    );
+  const handleReactivateLecturer = async (id) => {
+    try { await adminService.updateLecturerStatus(id, 'active'); } catch (_) {}
+    setLecturers((prev) => prev.map((l) => (l.id === id ? { ...l, accountStatus: 'active' } : l)));
     setConfirmModal(null);
   };
 
-  const handleDeleteLecturer = (id) => {
+  const handleDeleteLecturer = async (id) => {
+    try { await adminService.updateLecturerStatus(id, 'deleted'); } catch (_) {}
     setLecturers((prev) => prev.filter((l) => l.id !== id));
     setConfirmModal(null);
   };
@@ -103,7 +110,7 @@ export default function ModerationPage() {
                   <tr key={inst.id}>
                     <td>
                       <div className={styles.entityCell}>
-                        <div className={styles.avatar} style={{ background: inst.color }}>
+                        <div className={styles.avatar} style={{ background: inst.avatarColor ?? inst.color }}>
                           {inst.initials}
                         </div>
                         <div>
@@ -119,8 +126,8 @@ export default function ModerationPage() {
                         {inst.status}
                       </span>
                     </td>
-                    <td>{inst.stats.jobs}</td>
-                    <td>{inst.stats.lecturers}</td>
+                    <td>{inst.stats?.jobs ?? inst.jobCount ?? 0}</td>
+                    <td>{inst.stats?.lecturers ?? inst.lecturerCount ?? 0}</td>
                     <td>
                       <div className={styles.actionBtns}>
                         {inst.status === 'active' && (
@@ -179,7 +186,7 @@ export default function ModerationPage() {
                   <tr key={lec.id}>
                     <td>
                       <div className={styles.entityCell}>
-                        <div className={styles.avatar} style={{ background: lec.color }}>
+                        <div className={styles.avatar} style={{ background: lec.avatarColor ?? lec.color }}>
                           {lec.initials}
                         </div>
                         <div>

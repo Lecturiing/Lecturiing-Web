@@ -1,5 +1,6 @@
 .page { display: flex; flex-direction: column; gap: 16px; }
 .list { display: flex; flex-direction: column; gap: 12px; }
+.empty { color: #9ca3af; font-size: 0.88rem; padding: 32px; text-align: center; }
 .card { background: white; border: 1px solid #eef0f4; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; transition: box-shadow 0.2s; }
 .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
 .cardLeft { display: flex; align-items: center; gap: 14px; flex: 1; }

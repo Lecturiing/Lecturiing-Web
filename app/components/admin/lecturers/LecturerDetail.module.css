@@ -91,7 +91,55 @@
 .viewInstitutionsLink { font-size: 0.82rem; font-weight: 700; color: #dc2626; text-decoration: none; }
 .viewInstitutionsLink:hover { text-decoration: underline; }
 
+/* Certifications list */
+.certList { display: flex; flex-direction: column; gap: 10px; }
+.certItem { display: flex; align-items: flex-start; gap: 10px; }
+.certBadge { width: 22px; height: 22px; background: #d1fae5; color: #065f46; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+.certName { font-size: 0.88rem; font-weight: 700; color: #111827; margin: 0; }
+.certMeta { font-size: 0.78rem; color: #6b7280; margin: 2px 0 0; }
+
+/* Portfolio */
+.portfolioGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.portfolioCard { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.portfolioType { font-size: 0.72rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+.portfolioTitle { font-size: 0.88rem; font-weight: 700; color: #111827; margin: 0; flex: 1; }
+.portfolioFooter { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.portfolioYear { font-size: 0.78rem; color: #9ca3af; }
+
+/* Account Info */
+.accountList { display: flex; flex-direction: column; gap: 0; }
+.accountRow { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #f3f4f6; }
+.accountRow:last-child { border-bottom: none; }
+.accountLabel { font-size: 0.78rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.03em; }
+.accountValue { font-size: 0.85rem; font-weight: 600; color: #374151; }
+.accountBadgeGreen { font-size: 0.8rem; font-weight: 700; color: #065f46; background: #d1fae5; padding: 3px 10px; border-radius: 20px; }
+.accountBadgeRed { font-size: 0.8rem; font-weight: 700; color: #991b1b; background: #fee2e2; padding: 3px 10px; border-radius: 20px; }
+.accountBadgeGray { font-size: 0.8rem; font-weight: 700; color: #6b7280; background: #f3f4f6; padding: 3px 10px; border-radius: 20px; }
+
+/* Avatar image */
+.avatarImg { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; flex-shrink: 0; }
+
+/* LinkedIn link */
+.linkedIn { font-size: 0.88rem; font-weight: 600; color: #dc2626; text-decoration: none; }
+.linkedIn:hover { text-decoration: underline; }
+
 /* Modal */
-.modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; z-index: 999; animation: fadeIn 0.2s; }
+.modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 999; animation: fadeIn 0.2s; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.modalContent { background: #065f46; color: #fff; padding: 16px 28px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); }
+.modalSmall { background: #fff; border-radius: 16px; width: 90%; max-width: 440px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.modalLarge { background: #fff; border-radius: 16px; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #e5e7eb; }
+.modalTitle { font-size: 1rem; font-weight: 800; color: #111827; margin: 0; }
+.modalClose { background: none; border: none; font-size: 1rem; color: #9ca3af; cursor: pointer; padding: 4px; border-radius: 6px; line-height: 1; }
+.modalClose:hover { background: #f3f4f6; color: #374151; }
+.modalBody { padding: 24px; overflow-y: auto; flex: 1; font-size: 0.9rem; }
+.modalFooter { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid #e5e7eb; }
+.modalCancelBtn { padding: 9px 18px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #374151; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.modalCancelBtn:hover { background: #f3f4f6; }
+.modalConfirmBtn { padding: 9px 18px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.modalConfirmBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.confirmApprove { background: #d1fae5; color: #065f46; }
+.confirmApprove:hover:not(:disabled) { background: #a7f3d0; }
+.confirmReject { background: #fee2e2; color: #991b1b; }
+.confirmReject:hover:not(:disabled) { background: #fecaca; }
+.modalContent { background: #065f46; color: #fff; padding: 16px 28px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
