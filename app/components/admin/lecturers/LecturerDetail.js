@@ -148,7 +148,15 @@ export default function LecturerDetail({ id }) {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Hourly Rate</p>
-          <p className={styles.statValue}>${Number(lecturer.hourlyRate ?? 0).toLocaleString()} <span style={{ fontSize: 13, fontWeight: 400 }}>{lecturer.currency || 'USD'}</span></p>
+          <p className={styles.statValue}>{Number(lecturer.hourlyRate ?? 0).toLocaleString()} <span style={{ fontSize: 13, fontWeight: 400 }}>{lecturer.currency || 'USD'}/hr</span></p>
+        </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Monthly Rate</p>
+          <p className={styles.statValue}>
+            {lecturer.preferredMonthlyRate
+              ? <>{Number(lecturer.preferredMonthlyRate).toLocaleString()} <span style={{ fontSize: 13, fontWeight: 400 }}>{lecturer.currency || 'USD'}/mo</span></>
+              : <span style={{ fontSize: 14, color: '#9ca3af' }}>Not set</span>}
+          </p>
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Rating</p>

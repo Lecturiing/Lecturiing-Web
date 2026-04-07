@@ -184,3 +184,21 @@
 .jobDetailSection { display: flex; flex-direction: column; gap: 6px; }
 .jobDetailText { font-size: 0.875rem; color: #374151; line-height: 1.6; margin: 0; }
 .jobDetailList { margin: 0; padding-left: 18px; font-size: 0.875rem; color: #374151; line-height: 1.8; }
+
+/* Applicant count chip on job row */
+.jobApplicantCount { font-size: 0.75rem; font-weight: 700; color: #4f46e5; background: #ede9fe; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.jobApplicantsBtn { background: #ede9fe; color: #4f46e5; }
+.jobApplicantsBtn:hover { background: #ddd6fe; }
+
+/* Applications modal list */
+.appList { display: flex; flex-direction: column; gap: 0; }
+.appRow { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+.appRow:last-child { border-bottom: none; }
+.appAvatar { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; background: #9ca3af; }
+.appInfo { flex: 1; min-width: 0; }
+.appName { font-size: 0.9rem; font-weight: 800; color: #111827; margin: 0 0 2px; }
+.appMeta { font-size: 0.78rem; color: #6b7280; margin: 0 0 4px; }
+.appCover { font-size: 0.78rem; color: #9ca3af; margin: 0; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appRight { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.appStatus { font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.appDate { font-size: 0.72rem; color: #9ca3af; }

@@ -19,6 +19,8 @@ export const adminService = {
     api.patch(`/api/admin/institutions/${institutionId}/jobs/${jobId}/status`, { status }),
   deleteJob: (institutionId, jobId) =>
     api.delete(`/api/admin/institutions/${institutionId}/jobs/${jobId}`),
+  getJobApplications: (institutionId, jobId) =>
+    api.get(`/api/admin/institutions/${institutionId}/jobs/${jobId}/applications`),
 
   // Lecturers
   listLecturers: (params = {}) => {

@@ -50,6 +50,24 @@
   flex-shrink: 0;
 }
 
+.heroAvatarImg {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.linkedIn {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+}
+.linkedIn:hover { text-decoration: underline; }
+
 .heroInfo {
   flex: 1;
   min-width: 0;
@@ -380,4 +398,73 @@
   font-size: 0.7rem;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+/* ── Documents ── */
+.docList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.docItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+}
+.docItem:hover { background: #f3f4f6; }
+
+.docIcon { font-size: 1.2rem; flex-shrink: 0; }
+
+.docLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.docName {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 2px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.docArrow {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: #4f46e5;
+  flex-shrink: 0;
+}
+
+/* ── Contact Info grid ── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  row-gap: 10px;
+  column-gap: 16px;
+  align-items: center;
+}
+
+.infoLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.infoValue {
+  font-size: 0.88rem;
+  color: #111827;
 }

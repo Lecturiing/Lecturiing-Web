@@ -8,6 +8,6 @@ export const applicationService = {
     return api.get(`/api/applications${qs ? `?${qs}` : ''}`);
   },
 
-  updateStatus: (id, status) =>
-    api.patch(`/api/applications/${id}/status`, { status }),
+  updateStatus: (id, status, extra = {}) =>
+    api.patch(`/api/applications/${id}/status`, { status, ...extra }),
 };

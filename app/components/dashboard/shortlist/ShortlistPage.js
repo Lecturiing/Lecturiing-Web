@@ -31,10 +31,26 @@ export default function ShortlistPage() {
 
   useEffect(() => {
     shortlistService.list()
-      .then((data) => setItems(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        // Normalise to flat shape frontend expects
+        setItems(list.map((item) => ({
+          ...item,
+          lecturerName: item.lecturer?.name ?? item.lecturerName ?? '—',
+          lecturerInitials: item.lecturer?.initials ?? item.lecturerInitials ?? '?',
+          lecturerColor: item.lecturer?.color ?? item.lecturerColor ?? '#4f46e5',
+          lecturerEmail: item.lecturer?.email ?? item.lecturerEmail,
+          jobTitle: item.job?.title ?? item.jobTitle ?? '—',
+        })));
+      })
       .catch(() => {});
   }, []);
-  const [scheduleFor, setScheduleFor] = useState(null); // shortlist item
+  const [scheduleFor, setScheduleFor] = useState(null);
+  const [meetingType, setMeetingType] = useState('meet');
+  const [meetingLink, setMeetingLink] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  // Keep calendly embed state for optional embed
   const [calendlyUrl, setCalendlyUrl] = useState('');
   const [showCalendlyInput, setShowCalendlyInput] = useState(false);
 
@@ -45,8 +61,29 @@ export default function ShortlistPage() {
 
   const openSchedule = (item) => {
     setScheduleFor(item);
+    setMeetingType('meet');
+    setMeetingLink('');
+    setInterviewDate('');
     setCalendlyUrl('');
     setShowCalendlyInput(false);
+  };
+
+  const confirmSchedule = async () => {
+    if (!scheduleFor || !meetingLink) return;
+    setScheduleLoading(true);
+    try {
+      await shortlistService.scheduleInterview(scheduleFor.id, {
+        meetingLink,
+        interviewDate: interviewDate || undefined,
+      });
+      setItems((prev) => prev.map((i) =>
+        i.id === scheduleFor.id
+          ? { ...i, status: 'interview_scheduled', interviewDate: interviewDate || null, calendlyLink: meetingLink }
+          : i
+      ));
+    } catch (_) {}
+    setScheduleLoading(false);
+    setScheduleFor(null);
   };
 
   return (
@@ -112,47 +149,65 @@ export default function ShortlistPage() {
               <button className={styles.modalClose} onClick={() => setScheduleFor(null)}>✕</button>
             </div>
 
-            {!calendlyUrl && !showCalendlyInput && (
-              <div className={styles.calendlyIntro}>
-                <div className={styles.calendlyIcon}><CalIcon /></div>
-                <p className={styles.calendlyDesc}>
-                  Use your Calendly link to let the lecturer pick a time that works for both of you. The invite will be sent automatically.
-                </p>
-                <button className={styles.calendlySetupBtn} onClick={() => setShowCalendlyInput(true)}>
-                  Enter Calendly Link
+            <div className={styles.meetingTypeTabs}>
+              {[['meet', 'Google Meet'], ['calendly', 'Calendly'], ['custom', 'Custom Link']].map(([k, label]) => (
+                <button
+                  key={k}
+                  className={`${styles.meetingTypeBtn} ${meetingType === k ? styles.meetingTypeActive : ''}`}
+                  onClick={() => { setMeetingType(k); setMeetingLink(''); setCalendlyUrl(''); }}
+                >
+                  {label}
                 </button>
-                <p className={styles.calendlyNote}>Don't have Calendly? <a href="https://calendly.com" target="_blank" rel="noreferrer">Create a free account →</a></p>
+              ))}
+            </div>
+
+            {meetingType === 'meet' && (
+              <div className={styles.meetingNote}>
+                <p>Create a Google Meet link and paste it below. An invite email will be sent to the lecturer.</p>
+                <a href="https://meet.google.com/new" target="_blank" rel="noreferrer" className={styles.meetingExternalLink}>
+                  Open Google Meet →
+                </a>
+              </div>
+            )}
+            {meetingType === 'calendly' && (
+              <div className={styles.meetingNote}>
+                <p>Paste your Calendly event link. The lecturer can pick a time, and an invite email will be sent.</p>
+                <a href="https://calendly.com" target="_blank" rel="noreferrer" className={styles.meetingExternalLink}>
+                  Open Calendly →
+                </a>
               </div>
             )}
 
-            {showCalendlyInput && !calendlyUrl && (
-              <div className={styles.calendlyInputWrap}>
-                <label className={styles.label}>Your Calendly Event URL</label>
-                <input
-                  className={styles.calendlyInput}
-                  placeholder="https://calendly.com/your-name/30min"
-                  onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.startsWith('https://calendly.com')) setCalendlyUrl(e.target.value); }}
-                  autoFocus
-                />
-                <p className={styles.calendlyNote}>Press Enter to load the scheduler.</p>
-                <button className={styles.calendlySetupBtn} onClick={(e) => {
-                  const input = e.target.previousElementSibling.previousElementSibling;
-                  if (input && input.value.includes('calendly.com')) setCalendlyUrl(input.value);
-                }}>Load Scheduler</button>
-              </div>
-            )}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Meeting Link *</label>
+              <input
+                className={styles.calendlyInput}
+                placeholder={meetingType === 'meet' ? 'https://meet.google.com/abc-defg-hij' : meetingType === 'calendly' ? 'https://calendly.com/your-name/30min' : 'https://...'}
+                value={meetingLink}
+                onChange={(e) => setMeetingLink(e.target.value)}
+                autoFocus
+              />
+            </div>
 
-            {calendlyUrl && (
-              <div className={styles.calendlyEmbed}>
-                <CalendlyEmbed url={calendlyUrl} />
-              </div>
-            )}
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Interview Date & Time (optional)</label>
+              <input
+                type="datetime-local"
+                className={styles.calendlyInput}
+                value={interviewDate}
+                onChange={(e) => setInterviewDate(e.target.value)}
+              />
+            </div>
 
             <div className={styles.modalFooter}>
-              <button className={styles.btnConfirm} onClick={() => {
-                updateStatus(scheduleFor.id, 'interview_scheduled');
-                setScheduleFor(null);
-              }}>Mark as Scheduled</button>
+              <button className={styles.btnCancel} onClick={() => setScheduleFor(null)}>Cancel</button>
+              <button
+                className={styles.btnConfirm}
+                disabled={!meetingLink || scheduleLoading}
+                onClick={confirmSchedule}
+              >
+                {scheduleLoading ? 'Sending…' : 'Schedule & Send Invite'}
+              </button>
             </div>
           </div>
         </div>

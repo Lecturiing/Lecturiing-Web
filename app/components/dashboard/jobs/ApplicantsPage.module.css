@@ -279,6 +279,194 @@
 }
 .restoreBtn:hover { background: #e5e7eb; color: #374151; }
 
+/* ── Modals ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  width: 480px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.modalClose {
+  width: 30px; height: 30px;
+  border: none; background: #f3f4f6;
+  border-radius: 50%; cursor: pointer;
+  font-size: 0.9rem; color: #374151;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.modalSub {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0 0 20px;
+}
+
+.modalField {
+  margin-bottom: 16px;
+}
+
+.modalLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  outline: none;
+  box-sizing: border-box;
+}
+.modalInput:focus { border-color: #4f46e5; }
+
+.modalFooter {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.modalCancel {
+  padding: 8px 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.meetingTypeTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.meetingTypeBtn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 0.82rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.meetingTypeActive {
+  background: #ede9fe;
+  border-color: #a5b4fc;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.meetingNote {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.meetingNote p {
+  font-size: 0.83rem;
+  color: #4b5563;
+  margin: 0 0 6px;
+}
+
+.meetingExternalLink {
+  font-size: 0.82rem;
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+.meetingExternalLink:hover { text-decoration: underline; }
+
+.modalSection { margin-bottom: 8px; }
+
+.modalSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px;
+}
+
+.modalEmpty {
+  font-size: 0.83rem;
+  color: #9ca3af;
+  font-style: italic;
+  margin: 0 0 8px;
+}
+
+.modalDocRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.modalDocRow:hover { background: #f9fafb; }
+
+.modalDocSelected {
+  background: #ede9fe;
+  border-color: #a5b4fc;
+}
+
+.modalCheckbox { margin-top: 2px; flex-shrink: 0; }
+
+.modalDocTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.modalDocMeta {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 2px 0 0;
+}
+
 /* ── Drawer ── */
 .overlay {
   position: fixed;
@@ -350,7 +538,34 @@
   color: #fff;
   font-size: 1.2rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
+
+.drawerAvatarImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.drawerLinkedIn {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+}
+.drawerLinkedIn:hover { text-decoration: underline; }
 
 .drawerName {
   font-size: 1.15rem;
@@ -379,6 +594,13 @@
   padding: 4px 12px;
   border-radius: 20px;
   display: inline-block;
+}
+
+.drawerLoading {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 4px 0 0;
+  font-style: italic;
 }
 
 .drawerBio {
@@ -454,6 +676,32 @@
 .portType { font-size: 0.7rem; font-weight: 700; color: #4f46e5; background: #ede9fe; padding: 2px 8px; border-radius: 20px; display: inline-block; align-self: flex-start; }
 .portTitle { font-size: 0.83rem; font-weight: 600; color: #111827; margin: 0; }
 .portYear { font-size: 0.72rem; color: #9ca3af; }
+
+/* Interview / Offer detail boxes in drawer */
+.interviewBox {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.offerBox {
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.interviewBoxTitle { font-size: 0.82rem; font-weight: 700; color: #1e40af; margin: 0; }
+.offerBox .interviewBoxTitle { color: #065f46; }
+.interviewBoxRow { font-size: 0.83rem; color: #1e3a8a; margin: 0; }
+.interviewBoxLink { font-size: 0.82rem; font-weight: 600; color: #1d4ed8; text-decoration: none; }
+.interviewBoxLink:hover { text-decoration: underline; }
+.interviewBoxNote { font-size: 0.8rem; color: #6b7280; font-style: italic; margin: 0; }
 
 /* Drawer actions */
 .drawerActions {

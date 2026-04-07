@@ -43,4 +43,16 @@
 .modalFooter { padding-top: 16px; border-top: 1px solid #f0f0f5; display: flex; justify-content: flex-end; }
 .btnConfirm { background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
 .btnConfirm:hover { background: #047857; }
+.btnConfirm:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnCancel { background: #fff; color: #374151; border: 1px solid #d1d5db; padding: 10px 20px; border-radius: 10px; font-size: 0.88rem; cursor: pointer; }
+.btnCancel:hover { background: #f9fafb; }
+.meetingTypeTabs { display: flex; gap: 8px; }
+.meetingTypeBtn { flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; font-size: 0.82rem; color: #6b7280; cursor: pointer; }
+.meetingTypeActive { background: #ede9fe; border-color: #a5b4fc; color: #4f46e5; font-weight: 600; }
+.meetingNote { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; }
+.meetingNote p { font-size: 0.83rem; color: #4b5563; margin: 0 0 6px; }
+.meetingExternalLink { font-size: 0.82rem; color: #4f46e5; font-weight: 600; text-decoration: none; }
+.meetingExternalLink:hover { text-decoration: underline; }
+.fieldGroup { display: flex; flex-direction: column; gap: 6px; }
+.modalFooter { padding-top: 16px; border-top: 1px solid #f0f0f5; display: flex; justify-content: flex-end; gap: 8px; }
 @media (max-width: 768px) { .thead, .row { grid-template-columns: 1.5fr 1fr 1fr; } .thead span:nth-child(4), .row span:nth-child(4) { display: none; } }

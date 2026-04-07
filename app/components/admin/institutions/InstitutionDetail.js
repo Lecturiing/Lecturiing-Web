@@ -25,6 +25,8 @@ export default function InstitutionDetail({ id }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [viewingJob, setViewingJob] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [viewingApplications, setViewingApplications] = useState(null); // { job, applications }
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [confirmSuspend, setConfirmSuspend] = useState(false);
   const [suspendLoading, setSuspendLoading] = useState(false);
   const [suspendError, setSuspendError] = useState(null);
@@ -112,6 +114,19 @@ export default function InstitutionDetail({ id }) {
       setInstitution((prev) => ({ ...prev, jobs: prev.jobs.filter((j) => j.id !== jobId) }));
       setConfirmDelete(null);
     } catch (_) {}
+  };
+
+  const handleViewApplications = async (job) => {
+    setApplicationsLoading(true);
+    setViewingApplications({ job, applications: [] });
+    try {
+      const data = await adminService.getJobApplications(id, job.id);
+      setViewingApplications({ job, applications: data?.applications ?? [] });
+    } catch (_) {
+      setViewingApplications({ job, applications: [] });
+    } finally {
+      setApplicationsLoading(false);
+    }
   };
 
   return (
@@ -342,9 +357,15 @@ export default function InstitutionDetail({ id }) {
                       <span className={`${styles.jobStatus} ${styles['jobStatus_' + job.status]}`}>
                         {job.status}
                       </span>
+                      <span className={styles.jobApplicantCount}>
+                        {job.applicantCount ?? 0} applicant{job.applicantCount !== 1 ? 's' : ''}
+                      </span>
                       <div className={styles.jobActions}>
                         <button className={styles.jobActionBtn} onClick={() => setViewingJob(job)}>
-                          View
+                          Details
+                        </button>
+                        <button className={`${styles.jobActionBtn} ${styles.jobApplicantsBtn}`} onClick={() => handleViewApplications(job)}>
+                          Applicants
                         </button>
                         <button
                           className={`${styles.jobActionBtn} ${job.status === 'active' ? styles.jobDeactivateBtn : styles.jobActivateBtn}`}
@@ -580,6 +601,75 @@ export default function InstitutionDetail({ id }) {
               <button className={`${styles.jobActionBtn} ${styles.jobDeleteBtn}`} onClick={() => { setViewingJob(null); setConfirmDelete(viewingJob); }}>
                 Delete Job
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Job Applications Modal */}
+      {viewingApplications && (
+        <div className={styles.modal} onClick={() => setViewingApplications(null)}>
+          <div className={styles.modalLarge} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div>
+                <h3 className={styles.modalTitle}>Applicants — {viewingApplications.job.title}</h3>
+                <p style={{ margin: 0, fontSize: 13, color: '#6b7280' }}>
+                  {viewingApplications.job.field} · {viewingApplications.job.contractType} · ${viewingApplications.job.budgetMin}–${viewingApplications.job.budgetMax} {viewingApplications.job.currency}
+                </p>
+              </div>
+              <button className={styles.modalClose} onClick={() => setViewingApplications(null)}>✕</button>
+            </div>
+            <div className={styles.modalBody}>
+              {applicationsLoading ? (
+                <p style={{ color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>Loading applicants…</p>
+              ) : viewingApplications.applications.length === 0 ? (
+                <p style={{ color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>No applications yet for this job.</p>
+              ) : (
+                <div className={styles.appList}>
+                  {viewingApplications.applications.map((app) => {
+                    const lec = app.lecturer ?? {};
+                    const statusMeta = {
+                      pending:              { label: 'Pending',    bg: '#f3f4f6', color: '#6b7280' },
+                      shortlisted:          { label: 'Shortlisted', bg: '#ede9fe', color: '#4f46e5' },
+                      interview_scheduled:  { label: 'Interview',  bg: '#dbeafe', color: '#1d4ed8' },
+                      declined:             { label: 'Declined',   bg: '#fee2e2', color: '#dc2626' },
+                      offer_sent:           { label: 'Offer Sent', bg: '#d1fae5', color: '#059669' },
+                    }[app.status] ?? { label: app.status, bg: '#f3f4f6', color: '#6b7280' };
+                    return (
+                      <div key={app.id} className={styles.appRow}>
+                        <div className={styles.appAvatar} style={{ background: lec.color }}>
+                          {lec.initials || '?'}
+                        </div>
+                        <div className={styles.appInfo}>
+                          <p className={styles.appName}>{lec.name || 'Unknown'}</p>
+                          <p className={styles.appMeta}>
+                            {lec.title || '—'} · {lec.country || '—'}
+                            {lec.hourlyRate ? ` · $${lec.hourlyRate}/hr` : ''}
+                            {lec.rating ? ` · ★ ${Number(lec.rating).toFixed(1)}` : ''}
+                          </p>
+                          {app.coverNote && (
+                            <p className={styles.appCover}>&ldquo;{app.coverNote}&rdquo;</p>
+                          )}
+                        </div>
+                        <div className={styles.appRight}>
+                          <span className={styles.appStatus} style={{ background: statusMeta.bg, color: statusMeta.color }}>
+                            {statusMeta.label}
+                          </span>
+                          <span className={styles.appDate}>
+                            {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className={styles.modalFooter}>
+              <span style={{ fontSize: 13, color: '#6b7280' }}>
+                {viewingApplications.applications.length} total applicant{viewingApplications.applications.length !== 1 ? 's' : ''}
+              </span>
+              <button className={styles.jobActionBtn} onClick={() => setViewingApplications(null)}>Close</button>
             </div>
           </div>
         </div>

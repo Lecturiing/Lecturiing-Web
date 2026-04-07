@@ -24,10 +24,25 @@ export default function OffersPage() {
 
   useEffect(() => {
     offerService.list()
-      .then((data) => setOffers(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setOffers(list.map((o) => ({
+          ...o,
+          lecturerName: o.lecturer?.name ?? o.lecturerName ?? '—',
+          lecturerInitials: o.lecturer?.initials ?? o.lecturerInitials ?? '?',
+          lecturerColor: o.lecturer?.color ?? o.lecturerColor ?? '#4f46e5',
+          country: o.lecturer?.country ?? o.country,
+          qualification: o.lecturer?.qualification ?? o.qualification,
+          rating: o.lecturer?.rating ?? o.rating,
+          jobTitle: o.job?.title ?? o.jobTitle ?? '—',
+          offeredAt: o.offeredAt
+            ? new Date(o.offeredAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            : '—',
+        })));
+      })
       .catch(() => {});
     documentService.list()
-      .then((data) => setAvailableDocs(Array.isArray(data) ? data : []))
+      .then((data) => setAvailableDocs(Array.isArray(data) ? data : (data?.documents ?? [])))
       .catch(() => {});
   }, []);
 

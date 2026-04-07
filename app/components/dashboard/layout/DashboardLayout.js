@@ -13,6 +13,7 @@ const NAV = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserIcon },
   { href: '/dashboard/jobs', label: 'Job Postings', icon: BriefcaseIcon },
   { href: '/dashboard/shortlist', label: 'Shortlist', icon: StarIcon },
+  { href: '/dashboard/pipeline', label: 'Pipeline', icon: PipelineIcon },
   { href: '/dashboard/contracts', label: 'Contracts', icon: DocumentIcon },
   { href: '/dashboard/offers', label: 'Offers', icon: OfferIcon },
   { href: '/dashboard/documents', label: 'Doc Library', icon: FolderIcon },
@@ -263,6 +264,9 @@ function ShieldIcon() {
 }
 function OfferIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>;
+}
+function PipelineIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>;
 }
 function FolderIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>;

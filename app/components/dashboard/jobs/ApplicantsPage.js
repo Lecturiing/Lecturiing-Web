@@ -7,6 +7,7 @@ import styles from './ApplicantsPage.module.css';
 import { jobService } from '@/app/lib/services/jobService';
 import { applicationService } from '@/app/lib/services/applicationService';
 import { lecturerService } from '@/app/lib/services/lecturerService';
+import { documentService } from '@/app/lib/services/documentService';
 
 const STATUS_TABS = ['All', 'Pending', 'Shortlisted', 'Interview', 'Declined', 'Offer Sent'];
 
@@ -34,12 +35,26 @@ export default function ApplicantsPage({ jobId }) {
   const [tab, setTab] = useState('All');
   const [selected, setSelected] = useState(null);
   const [selectedDetails, setSelectedDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState('about');
+
+  // Interview modal
+  const [interviewModal, setInterviewModal] = useState(null); // app object
+  const [meetingType, setMeetingType] = useState('meet'); // 'meet' | 'calendly' | 'custom'
+  const [meetingLink, setMeetingLink] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewLoading, setInterviewLoading] = useState(false);
+
+  // Offer document modal
+  const [offerModal, setOfferModal] = useState(null); // app object
+  const [availableDocs, setAvailableDocs] = useState([]);
+  const [selectedDocs, setSelectedDocs] = useState([]);
+  const [offerLoading, setOfferLoading] = useState(false);
 
   useEffect(() => {
     jobService.get(jobId).then((data) => setJob(data)).catch(() => {});
     jobService.getApplicants(jobId)
-      .then((data) => setApplicants(Array.isArray(data) ? data : (data?.applicants ?? [])))
+      .then((data) => setApplicants(Array.isArray(data) ? data : (data?.applications ?? data?.applicants ?? [])))
       .catch(() => {});
   }, [jobId]);
 
@@ -47,9 +62,12 @@ export default function ApplicantsPage({ jobId }) {
     if (!selected) { setSelectedDetails(null); return; }
     const lecturerId = selected.lecturerId ?? selected.lecturer?.id;
     if (!lecturerId) return;
+    setDetailsLoading(true);
+    setSelectedDetails(null);
     lecturerService.get(lecturerId)
       .then((data) => setSelectedDetails(data))
-      .catch(() => setSelectedDetails(null));
+      .catch(() => setSelectedDetails(null))
+      .finally(() => setDetailsLoading(false));
   }, [selected]);
 
   const filtered = applicants.filter((a) => {
@@ -63,10 +81,43 @@ export default function ApplicantsPage({ jobId }) {
     return acc;
   }, {});
 
-  const updateStatus = async (appId, newStatus) => {
-    try { await applicationService.updateStatus(appId, newStatus); } catch (_) {}
-    setApplicants((prev) => prev.map((a) => a.id === appId ? { ...a, status: newStatus } : a));
-    if (selected?.id === appId) setSelected((s) => ({ ...s, status: newStatus }));
+  const updateStatus = async (appId, newStatus, extra = {}) => {
+    try { await applicationService.updateStatus(appId, newStatus, extra); } catch (_) {}
+    setApplicants((prev) => prev.map((a) => a.id === appId ? { ...a, status: newStatus, ...extra } : a));
+    if (selected?.id === appId) setSelected((s) => ({ ...s, status: newStatus, ...extra }));
+  };
+
+  const openInterviewModal = (app) => {
+    setInterviewModal(app);
+    setMeetingType('meet');
+    setMeetingLink('');
+    setInterviewDate('');
+  };
+
+  const confirmInterview = async () => {
+    if (!interviewModal || !meetingLink) return;
+    setInterviewLoading(true);
+    await updateStatus(interviewModal.id, 'interview_scheduled', { meetingLink, interviewDate: interviewDate || undefined });
+    setInterviewLoading(false);
+    setInterviewModal(null);
+    if (selected?.id === interviewModal.id) setSelected(null);
+  };
+
+  const openOfferModal = (app) => {
+    setOfferModal(app);
+    setSelectedDocs([]);
+    if (availableDocs.length === 0) {
+      documentService.list().then((d) => setAvailableDocs(Array.isArray(d) ? d : (d?.documents ?? []))).catch(() => {});
+    }
+  };
+
+  const confirmOffer = async () => {
+    if (!offerModal) return;
+    setOfferLoading(true);
+    await updateStatus(offerModal.id, 'offer_sent', { documentIds: selectedDocs });
+    setOfferLoading(false);
+    setOfferModal(null);
+    if (selected?.id === offerModal.id) setSelected(null);
   };
 
   return (
@@ -141,7 +192,7 @@ export default function ApplicantsPage({ jobId }) {
 
               <div className={styles.rowRight}>
                 <span className={styles.statusBadge} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>
-                <span className={styles.appliedDate}>Applied {app.appliedAt}</span>
+                <span className={styles.appliedDate}>Applied {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}</span>
                 {app.interviewDate && (
                   <span className={styles.interviewDate}>
                     📅 {new Date(app.interviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
@@ -157,12 +208,12 @@ export default function ApplicantsPage({ jobId }) {
                   )}
                   {app.status === 'shortlisted' && (
                     <>
-                      <button className={styles.interviewBtn} onClick={() => updateStatus(app.id, 'interview_scheduled')}>Schedule Interview</button>
+                      <button className={styles.interviewBtn} onClick={() => openInterviewModal(app)}>Schedule Interview</button>
                       <button className={styles.declineBtn} onClick={() => updateStatus(app.id, 'declined')}>Decline</button>
                     </>
                   )}
                   {app.status === 'interview_scheduled' && (
-                    <button className={styles.offerBtn} onClick={() => updateStatus(app.id, 'offer_sent')}>Send Offer</button>
+                    <button className={styles.offerBtn} onClick={() => openOfferModal(app)}>Send Offer</button>
                   )}
                   {app.status === 'declined' && (
                     <button className={styles.restoreBtn} onClick={() => updateStatus(app.id, 'pending')}>Restore</button>
@@ -173,6 +224,124 @@ export default function ApplicantsPage({ jobId }) {
           );
         })}
       </div>
+
+      {/* ── Interview Modal ── */}
+      {interviewModal && (
+        <div className={styles.modalOverlay} onClick={() => setInterviewModal(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Schedule Interview</h3>
+              <button className={styles.modalClose} onClick={() => setInterviewModal(null)}>✕</button>
+            </div>
+            <p className={styles.modalSub}>
+              Scheduling with <strong>{(interviewModal.lecturer ?? interviewModal).name}</strong> for <em>{job?.title}</em>
+            </p>
+
+            <div className={styles.meetingTypeTabs}>
+              {[['meet', 'Google Meet'], ['calendly', 'Calendly'], ['custom', 'Custom Link']].map(([k, label]) => (
+                <button
+                  key={k}
+                  className={`${styles.meetingTypeBtn} ${meetingType === k ? styles.meetingTypeActive : ''}`}
+                  onClick={() => { setMeetingType(k); setMeetingLink(''); }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {meetingType === 'meet' && (
+              <div className={styles.meetingNote}>
+                <p>Create a Google Meet link and paste it below.</p>
+                <a href="https://meet.google.com/new" target="_blank" rel="noreferrer" className={styles.meetingExternalLink}>
+                  Open Google Meet →
+                </a>
+              </div>
+            )}
+            {meetingType === 'calendly' && (
+              <div className={styles.meetingNote}>
+                <p>Paste your Calendly event link below. The lecturer can pick a time that suits them.</p>
+                <a href="https://calendly.com" target="_blank" rel="noreferrer" className={styles.meetingExternalLink}>
+                  Open Calendly →
+                </a>
+              </div>
+            )}
+
+            <div className={styles.modalField}>
+              <label className={styles.modalLabel}>Meeting Link *</label>
+              <input
+                className={styles.modalInput}
+                placeholder={meetingType === 'meet' ? 'https://meet.google.com/abc-defg-hij' : meetingType === 'calendly' ? 'https://calendly.com/your-name/30min' : 'https://...'}
+                value={meetingLink}
+                onChange={(e) => setMeetingLink(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.modalField}>
+              <label className={styles.modalLabel}>Interview Date & Time (optional)</label>
+              <input
+                type="datetime-local"
+                className={styles.modalInput}
+                value={interviewDate}
+                onChange={(e) => setInterviewDate(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.modalCancel} onClick={() => setInterviewModal(null)}>Cancel</button>
+              <button
+                className={styles.interviewBtn}
+                disabled={!meetingLink || interviewLoading}
+                onClick={confirmInterview}
+              >
+                {interviewLoading ? 'Sending…' : 'Schedule & Send Email'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Offer Document Modal ── */}
+      {offerModal && (
+        <div className={styles.modalOverlay} onClick={() => setOfferModal(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Send Offer</h3>
+              <button className={styles.modalClose} onClick={() => setOfferModal(null)}>✕</button>
+            </div>
+            <p className={styles.modalSub}>
+              Sending offer to <strong>{(offerModal.lecturer ?? offerModal).name}</strong> for <em>{job?.title}</em>
+            </p>
+
+            <div className={styles.modalSection}>
+              <p className={styles.modalSectionTitle}>Select Documents to Send (optional)</p>
+              {availableDocs.length === 0 && (
+                <p className={styles.modalEmpty}>No documents in your Doc Library yet. The offer email will still be sent.</p>
+              )}
+              {availableDocs.map((doc) => (
+                <label key={doc.id} className={`${styles.modalDocRow} ${selectedDocs.includes(doc.id) ? styles.modalDocSelected : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={selectedDocs.includes(doc.id)}
+                    onChange={() => setSelectedDocs((prev) => prev.includes(doc.id) ? prev.filter((d) => d !== doc.id) : [...prev, doc.id])}
+                    className={styles.modalCheckbox}
+                  />
+                  <div>
+                    <p className={styles.modalDocTitle}>{doc.title ?? doc.fileName}</p>
+                    {doc.category && <p className={styles.modalDocMeta}>{doc.category}</p>}
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.modalCancel} onClick={() => setOfferModal(null)}>Cancel</button>
+              <button className={styles.offerBtn} disabled={offerLoading} onClick={confirmOffer}>
+                {offerLoading ? 'Sending…' : `Send Offer${selectedDocs.length > 0 ? ` + ${selectedDocs.length} Doc${selectedDocs.length > 1 ? 's' : ''}` : ''}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Profile Drawer ── */}
       {selected && (
@@ -190,84 +359,192 @@ export default function ApplicantsPage({ jobId }) {
             </div>
 
             {(() => {
-              const lec = selected.lecturer ?? selected;
+              const lec = selectedDetails ?? selected.lecturer ?? selected ?? {};
+              const sm = STATUS_META[selected.status] ?? STATUS_META.pending;
+
+              // Normalise data — same logic as LecturerProfile
+              const experience = Array.isArray(lec.workExperience) ? lec.workExperience : [];
+              const portfolio   = Array.isArray(lec.portfolio)     ? lec.portfolio     : [];
+              const education   = Array.isArray(lec.education) && lec.education.length > 0
+                ? lec.education
+                : lec.institutions
+                  ? [{ degree: lec.degrees, institution: lec.institutions, year: lec.graduationYears }]
+                  : [];
+              const certifications = Array.isArray(lec.certifications) && lec.certifications.length > 0
+                ? lec.certifications
+                : lec.certificationsText
+                  ? lec.certificationsText.split(',').map((c) => c.trim()).filter(Boolean)
+                  : [];
+              const specializations = Array.isArray(lec.specializations) ? lec.specializations : [];
+
               return (
                 <>
-                  <div className={styles.drawerAvatar} style={{ background: lec.avatarColor ?? lec.color }}>{lec.initials}</div>
-                  <div>
-                    <h2 className={styles.drawerName}>{lec.name}</h2>
-                    <p className={styles.drawerTitle}>{lec.title}</p>
+                  {/* Avatar */}
+                  {lec.avatarUrl ? (
+                    <img src={lec.avatarUrl} alt={lec.name} className={styles.drawerAvatarImg} />
+                  ) : (
+                    <div className={styles.drawerAvatar} style={{ background: lec.color ?? '#4f46e5' }}>{lec.initials}</div>
+                  )}
+
+                  {/* Name + status */}
+                  <div className={styles.drawerHeader}>
+                    <div>
+                      <h2 className={styles.drawerName}>{lec.name}</h2>
+                      {lec.title && <p className={styles.drawerTitle}>{lec.title}</p>}
+                    </div>
+                    <span className={styles.drawerStatus} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>
                   </div>
+
+                  {/* Meta chips */}
                   <div className={styles.drawerMeta}>
-                    <span>📍 {lec.country}</span>
-                    <span>🕐 {lec.timezone}</span>
-                    <span>🎓 {lec.qualification}</span>
-                    <span>⏱ {lec.yearsExperience ?? lec.experience} yrs</span>
+                    {lec.country        && <span>📍 {lec.country}</span>}
+                    {lec.timezone       && <span>🕐 {lec.timezone}</span>}
+                    {lec.qualification  && <span>🎓 {lec.qualification}</span>}
+                    {lec.yearsOfExperience != null && <span>⏱ {lec.yearsOfExperience} yrs</span>}
+                    {lec.hourlyRate     && <span>💰 ${lec.hourlyRate}/hr</span>}
+                    {lec.gender         && <span>👤 {lec.gender}</span>}
+                    {lec.nationality    && <span>🌐 {lec.nationality}</span>}
                   </div>
+
+                  {detailsLoading && <p className={styles.drawerLoading}>Loading profile…</p>}
+
+                  {/* About */}
+                  {(lec.bio || specializations.length > 0) && (
+                    <DrawerSection
+                      title="About"
+                      open={expandedSection === 'about'}
+                      onToggle={() => setExpandedSection(expandedSection === 'about' ? null : 'about')}
+                    >
+                      {lec.bio && <p className={styles.drawerBio}>{lec.bio}</p>}
+                      {specializations.length > 0 && (
+                        <div className={styles.drawerTags}>
+                          {specializations.map((s) => <span key={s} className={styles.tag}>{s}</span>)}
+                        </div>
+                      )}
+                    </DrawerSection>
+                  )}
+
+                  {/* Education */}
+                  {education.length > 0 && (
+                    <DrawerSection
+                      title="Education"
+                      open={expandedSection === 'edu'}
+                      onToggle={() => setExpandedSection(expandedSection === 'edu' ? null : 'edu')}
+                    >
+                      {education.map((e, i) => (
+                        <div key={i} className={styles.eduItem}>
+                          {e.degree && <p className={styles.eduDeg}>{e.degree}</p>}
+                          <p className={styles.eduInst}>{e.institution}{e.year ? ` · ${e.year}` : ''}</p>
+                        </div>
+                      ))}
+                    </DrawerSection>
+                  )}
+
+                  {/* Experience */}
+                  {experience.length > 0 && (
+                    <DrawerSection
+                      title="Experience"
+                      open={expandedSection === 'exp'}
+                      onToggle={() => setExpandedSection(expandedSection === 'exp' ? null : 'exp')}
+                    >
+                      {experience.map((e, i) => (
+                        <div key={i} className={styles.expItem}>
+                          <p className={styles.expRole}>{e.role}</p>
+                          <p className={styles.expInst}>{e.institution || 'Self-employed'}{e.period ? ` · ${e.period}` : ''}</p>
+                          {e.description && <p className={styles.expDesc}>{e.description}</p>}
+                        </div>
+                      ))}
+                    </DrawerSection>
+                  )}
+
+                  {/* Certifications */}
+                  {certifications.length > 0 && (
+                    <DrawerSection
+                      title="Certifications"
+                      open={expandedSection === 'cert'}
+                      onToggle={() => setExpandedSection(expandedSection === 'cert' ? null : 'cert')}
+                    >
+                      <div className={styles.drawerTags}>
+                        {certifications.map((c, i) => (
+                          <span key={i} className={styles.tag}>{typeof c === 'string' ? c : c.name}</span>
+                        ))}
+                      </div>
+                    </DrawerSection>
+                  )}
+
+                  {/* Honors */}
+                  {lec.honorsAwards && (
+                    <DrawerSection
+                      title="Honors & Awards"
+                      open={expandedSection === 'honors'}
+                      onToggle={() => setExpandedSection(expandedSection === 'honors' ? null : 'honors')}
+                    >
+                      <p className={styles.drawerBio}>{lec.honorsAwards}</p>
+                    </DrawerSection>
+                  )}
+
+                  {/* Portfolio */}
+                  {portfolio.length > 0 && (
+                    <DrawerSection
+                      title="Portfolio"
+                      open={expandedSection === 'port'}
+                      onToggle={() => setExpandedSection(expandedSection === 'port' ? null : 'port')}
+                    >
+                      {portfolio.map((p, i) => (
+                        <div key={i} className={styles.portItem}>
+                          <span className={styles.portType}>{p.type}</span>
+                          <p className={styles.portTitle}>{p.title}</p>
+                          <span className={styles.portYear}>{p.year}</span>
+                        </div>
+                      ))}
+                    </DrawerSection>
+                  )}
+
+                  {/* Interview details */}
+                  {selected.status === 'interview_scheduled' && (
+                    <div className={styles.interviewBox}>
+                      <p className={styles.interviewBoxTitle}>📅 Interview Scheduled</p>
+                      {selected.interviewDate && (
+                        <p className={styles.interviewBoxRow}>
+                          {new Date(selected.interviewDate).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
+                      )}
+                      {selected.meetingLink ? (
+                        <a href={selected.meetingLink} target="_blank" rel="noopener noreferrer" className={styles.interviewBoxLink}>
+                          Join Meeting →
+                        </a>
+                      ) : (
+                        <p className={styles.interviewBoxNote}>Meeting link pending</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Offer details */}
+                  {selected.status === 'offer_sent' && (
+                    <div className={styles.offerBox}>
+                      <p className={styles.interviewBoxTitle}>✅ Offer Sent</p>
+                      {selected.appliedAt && (
+                        <p className={styles.interviewBoxRow}>
+                          Sent {new Date(selected.appliedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                      {Array.isArray(selected.sentDocumentIds) && selected.sentDocumentIds.length > 0 && (
+                        <p className={styles.interviewBoxNote}>
+                          {selected.sentDocumentIds.length} document{selected.sentDocumentIds.length > 1 ? 's' : ''} sent
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* LinkedIn */}
+                  {lec.linkedIn && (
+                    <a href={lec.linkedIn} target="_blank" rel="noopener noreferrer" className={styles.drawerLinkedIn}>
+                      LinkedIn →
+                    </a>
+                  )}
                 </>
               );
             })()}
-
-            {(() => {
-              const sm = STATUS_META[selected.status] ?? STATUS_META.pending;
-              return <span className={styles.drawerStatus} style={{ background: sm.bg, color: sm.color }}>{sm.label}</span>;
-            })()}
-
-            <DrawerSection
-              title="About"
-              open={expandedSection === 'about'}
-              onToggle={() => setExpandedSection(expandedSection === 'about' ? null : 'about')}
-            >
-              <p className={styles.drawerBio}>{(selected.lecturer ?? selected).bio}</p>
-              <div className={styles.drawerTags}>
-                {((selected.lecturer ?? selected).specializations ?? []).map((s) => <span key={s} className={styles.tag}>{s}</span>)}
-              </div>
-            </DrawerSection>
-
-            {selectedDetails && (
-              <>
-                <DrawerSection
-                  title="Experience"
-                  open={expandedSection === 'exp'}
-                  onToggle={() => setExpandedSection(expandedSection === 'exp' ? null : 'exp')}
-                >
-                  {(selectedDetails.workExperience ?? selectedDetails.experience ?? []).map((e, i) => (
-                    <div key={i} className={styles.expItem}>
-                      <p className={styles.expRole}>{e.role}</p>
-                      <p className={styles.expInst}>{e.institution || 'Self-employed'} · {e.period}</p>
-                      <p className={styles.expDesc}>{e.description}</p>
-                    </div>
-                  ))}
-                </DrawerSection>
-
-                <DrawerSection
-                  title="Education"
-                  open={expandedSection === 'edu'}
-                  onToggle={() => setExpandedSection(expandedSection === 'edu' ? null : 'edu')}
-                >
-                  {(selectedDetails.education ?? []).map((e, i) => (
-                    <div key={i} className={styles.eduItem}>
-                      <p className={styles.eduDeg}>{e.degree}</p>
-                      <p className={styles.eduInst}>{e.institution} · {e.year}</p>
-                    </div>
-                  ))}
-                </DrawerSection>
-
-                <DrawerSection
-                  title="Portfolio"
-                  open={expandedSection === 'port'}
-                  onToggle={() => setExpandedSection(expandedSection === 'port' ? null : 'port')}
-                >
-                  {(selectedDetails.portfolio ?? []).map((p, i) => (
-                    <div key={i} className={styles.portItem}>
-                      <span className={styles.portType}>{p.type}</span>
-                      <p className={styles.portTitle}>{p.title}</p>
-                      <span className={styles.portYear}>{p.year}</span>
-                    </div>
-                  ))}
-                </DrawerSection>
-              </>
-            )}
 
             <div className={styles.drawerActions}>
               {selected.status === 'pending' && (
@@ -278,12 +555,12 @@ export default function ApplicantsPage({ jobId }) {
               )}
               {selected.status === 'shortlisted' && (
                 <>
-                  <button className={styles.interviewBtn} onClick={() => updateStatus(selected.id, 'interview_scheduled')}>Schedule Interview</button>
+                  <button className={styles.interviewBtn} onClick={() => openInterviewModal(selected)}>Schedule Interview</button>
                   <button className={styles.declineBtn} onClick={() => { updateStatus(selected.id, 'declined'); setSelected(null); }}>Decline</button>
                 </>
               )}
               {selected.status === 'interview_scheduled' && (
-                <button className={styles.offerBtn} onClick={() => updateStatus(selected.id, 'offer_sent')}>Send Offer</button>
+                <button className={styles.offerBtn} onClick={() => openOfferModal(selected)}>Send Offer</button>
               )}
               {selected.status === 'declined' && (
                 <button className={styles.restoreBtn} onClick={() => updateStatus(selected.id, 'pending')}>Restore Application</button>
