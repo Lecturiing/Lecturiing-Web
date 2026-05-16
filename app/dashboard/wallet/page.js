@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { walletService } from '@/app/lib/services/walletService';
 
@@ -26,6 +26,14 @@ function fmtDate(iso) {
 }
 
 export default function WalletPage() {
+  return (
+    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" /></div>}>
+      <WalletPageInner />
+    </Suspense>
+  );
+}
+
+function WalletPageInner() {
   const searchParams = useSearchParams();
   const justFunded = searchParams.get('funded') === '1';
 
