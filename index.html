@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Game Scoreboard Overlay</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 8px;
+    min-height: 100vh;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .scoreboard {
+    width: 720px;
+    background: linear-gradient(160deg, rgba(5,5,15,0.93) 0%, rgba(12,12,28,0.96) 100%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 14px 20px 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  .scoreboard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff2d55 0%, #ff6a00 25%, rgba(255,255,255,0.1) 50%, #00cfff 75%, #7b2fff 100%);
+  }
+
+  .scoreboard::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+    pointer-events: none;
+    border-radius: 14px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: #ff2d55;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #ff2d55;
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .header-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+  }
+
+  .main-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .player {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .player-left { align-items: flex-start; }
+  .player-right { align-items: flex-end; }
+
+  .player-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .player-left .player-name { color: #ff2d55; text-shadow: 0 0 14px rgba(255,45,85,0.5); }
+  .player-right .player-name { color: #00cfff; text-shadow: 0 0 14px rgba(0,207,255,0.5); }
+
+  .player-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .player-left .player-score { color: #ff2d55; text-shadow: 0 0 24px rgba(255,45,85,0.7); }
+  .player-right .player-score { color: #00cfff; text-shadow: 0 0 24px rgba(0,207,255,0.7); }
+
+  .gifts-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .player-right .gifts-row { justify-content: flex-end; }
+
+  .gift-chip {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .gift-chip span { font-size: 11px; }
+
+  .center-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .vs-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.1);
+    letter-spacing: 3px;
+  }
+
+  .pct-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.22);
+    letter-spacing: 2px;
+  }
+
+  .bar-wrap {
+    position: relative;
+    height: 18px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.04);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 8px;
+  }
+
+  .bar-p1 {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, #cc0030, #ff2d55);
+    border-radius: 10px 0 0 10px;
+    transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 3px 0 16px rgba(255,45,85,0.5);
+  }
+
+  .bar-p2 {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    background: linear-gradient(270deg, #0088bb, #00cfff);
+    border-radius: 0 10px 10px 0;
+    transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: -3px 0 16px rgba(0,207,255,0.5);
+  }
+
+  .bar-mid {
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.15);
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .leading-row {
+    text-align: center;
+    min-height: 14px;
+    margin-bottom: 8px;
+  }
+
+  .leading-txt {
+    font-family: 'Orbitron', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .leading-txt.show { opacity: 1; }
+  .leading-txt.p1 { color: #ff2d55; text-shadow: 0 0 10px rgba(255,45,85,0.6); }
+  .leading-txt.p2 { color: #00cfff; text-shadow: 0 0 10px rgba(0,207,255,0.6); }
+  .leading-txt.tied { color: rgba(255,255,255,0.3); }
+
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .btn {
+    padding: 7px 0;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:active { transform: scale(0.96); }
+
+  .btn-p1 {
+    background: linear-gradient(135deg, #aa0025, #ff2d55);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(255,45,85,0.3);
+  }
+
+  .btn-p2 {
+    background: linear-gradient(135deg, #005f99, #00cfff);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0,207,255,0.3);
+  }
+
+  .btn-reset {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 7px 12px;
+  }
+
+  .btn-reset:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+
+  @keyframes flash {
+    0% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+  .flash { animation: flash 0.3s ease-out; }
+
+  .particle {
+    position: absolute;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: pfly 0.6s ease-out forwards;
+  }
+  @keyframes pfly {
+    0% { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx),var(--ty)) scale(0); }
+  }
+</style>
+</head>
+<body>
+<div class="scoreboard" id="sb">
+
+  <div class="header">
+    <div class="live-dot"></div>
+    <div class="header-title">Viewer Vote Scoreboard</div>
+    <div class="live-dot"></div>
+  </div>
+
+  <div class="main-row">
+    <div class="player player-left">
+      <div class="player-name">Player 1</div>
+      <div class="player-score" id="score-p1">0</div>
+      <div class="gifts-row">
+        <div class="gift-chip"><span>🌹</span> Rose</div>
+        <div class="gift-chip"><span>🌌</span> Galaxy</div>
+      </div>
+    </div>
+
+    <div class="center-col">
+      <div class="vs-label">VS</div>
+      <div class="pct-label" id="pct-txt">50 / 50</div>
+    </div>
+
+    <div class="player player-right">
+      <div class="player-name">Player 2</div>
+      <div class="player-score" id="score-p2">0</div>
+      <div class="gifts-row">
+        <div class="gift-chip"><span>💙</span> Heart</div>
+        <div class="gift-chip"><span>🌌</span> Universe</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bar-wrap">
+    <div class="bar-p1" id="bar-p1" style="width:50%"></div>
+    <div class="bar-p2" id="bar-p2" style="width:50%"></div>
+    <div class="bar-mid"></div>
+  </div>
+
+  <div class="leading-row">
+    <div class="leading-txt" id="lead-txt"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-p1" onclick="vote(1,'Rose')">🌹 +Rose</button>
+    <button class="btn btn-p1" onclick="vote(1,'Galaxy')">🌌 +Galaxy</button>
+    <button class="btn btn-p2" onclick="vote(2,'Heart')">💙 +Heart</button>
+    <button class="btn btn-p2" onclick="vote(2,'Universe')">🌌 +Universe</button>
+    <button class="btn btn-reset" onclick="reset()">RESET</button>
+  </div>
+
+</div>
+
+<script>
+  let s = { p1: 0, p2: 0 };
+
+  function vote(player, gift) {
+    if (player === 1) s.p1++;
+    else s.p2++;
+    update(player);
+    burst(player);
+  }
+
+  function update(flashPlayer) {
+    const total = s.p1 + s.p2;
+    let p1pct = 50, p2pct = 50;
+    if (total > 0) {
+      p1pct = (s.p1 / total) * 100;
+      p2pct = (s.p2 / total) * 100;
+    }
+
+    const el1 = document.getElementById('score-p1');
+    const el2 = document.getElementById('score-p2');
+    el1.textContent = s.p1;
+    el2.textContent = s.p2;
+
+    const flashEl = flashPlayer === 1 ? el1 : el2;
+    flashEl.classList.remove('flash');
+    void flashEl.offsetWidth;
+    flashEl.classList.add('flash');
+
+    document.getElementById('bar-p1').style.width = p1pct + '%';
+    document.getElementById('bar-p2').style.width = p2pct + '%';
+    document.getElementById('pct-txt').textContent =
+      Math.round(p1pct) + ' / ' + Math.round(p2pct);
+
+    const lt = document.getElementById('lead-txt');
+    lt.className = 'leading-txt';
+    if (total === 0 || s.p1 === s.p2) {
+      lt.textContent = '— TIED —';
+      lt.className = 'leading-txt show tied';
+    } else if (s.p1 > s.p2) {
+      lt.textContent = '🔴 PLAYER 1 IS LEADING';
+      lt.className = 'leading-txt show p1';
+    } else {
+      lt.textContent = '🔵 PLAYER 2 IS LEADING';
+      lt.className = 'leading-txt show p2';
+    }
+  }
+
+  function burst(player) {
+    const color = player === 1 ? '#ff2d55' : '#00cfff';
+    const btnIdx = player === 1 ? 0 : 2;
+    const btns = document.querySelectorAll('.btn');
+    const btn = btns[btnIdx];
+    const sbRect = document.getElementById('sb').getBoundingClientRect();
+    const bRect = btn.getBoundingClientRect();
+
+    for (let i = 0; i < 10; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.background = color;
+      p.style.left = (bRect.left - sbRect.left + bRect.width / 2) + 'px';
+      p.style.top = (bRect.top - sbRect.top) + 'px';
+      p.style.zIndex = 99;
+      const a = Math.random() * Math.PI * 2;
+      const d = 25 + Math.random() * 45;
+      p.style.setProperty('--tx', Math.cos(a) * d + 'px');
+      p.style.setProperty('--ty', Math.sin(a) * d + 'px');
+      document.getElementById('sb').appendChild(p);
+      setTimeout(() => p.remove(), 620);
+    }
+  }
+
+  function reset() {
+    s = { p1: 0, p2: 0 };
+    update(null);
+  }
+
+  update(null);
+</script>
+</body>
+</html>

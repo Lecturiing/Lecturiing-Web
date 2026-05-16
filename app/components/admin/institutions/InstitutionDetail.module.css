@@ -80,8 +80,34 @@
 
 /* Lecturers List */
 .lecturersList { display: flex; flex-direction: column; gap: 0; }
-.lecturerRow { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; transition: box-shadow 0.2s; }
-.lecturerRow:hover { box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); }
+.lecturerCard { border: 1.5px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
+.lecturerCard:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.lecturerCardOpen { border-color: #4f46e5; box-shadow: 0 4px 18px rgba(79,70,229,0.08); }
+
+.lecturerRow { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; transition: background 0.15s; }
+.lecturerRow:hover { background: #f9fafb; }
+
+.lecChevron { font-size: 1rem; color: #9ca3af; flex-shrink: 0; transition: transform 0.2s; line-height: 1; }
+
+.lecTxPanel { border-top: 1.5px solid #e5e7eb; padding: 16px 20px; background: #f8faff; }
+.lecTxTitle { font-size: 0.75rem; font-weight: 800; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+.lecTxEmpty { font-size: 0.82rem; color: #9ca3af; margin: 0; padding: 8px 0; }
+
+.lecTxList { display: flex; flex-direction: column; gap: 0; }
+.lecTxRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+.lecTxRow:last-of-type { border-bottom: none; }
+.lecTxRowFailed { opacity: 0.65; }
+
+.lecTxInfo { flex: 1; min-width: 0; }
+.lecTxDesc { font-size: 0.82rem; font-weight: 600; color: #111827; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lecTxMeta { font-size: 0.72rem; color: #9ca3af; margin: 0; }
+
+.lecTxRight { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+.lecTxAmount { font-size: 0.85rem; font-weight: 700; color: #dc2626; }
+.lecTxAmountFailed { color: #9ca3af; }
+.lecTxFailedBadge { font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: #fee2e2; color: #991b1b; }
+
+.lecTxSummary { display: flex; justify-content: space-between; padding: 10px 0 0; margin-top: 4px; border-top: 2px solid #e0e7ff; font-size: 0.8rem; font-weight: 700; color: #374151; }
 
 .lecturerLeft { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
 .lecturerAvatar { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.95rem; font-weight: 800; flex-shrink: 0; }
@@ -140,6 +166,19 @@
 .tableTotalRow td { padding-top: 16px; padding-bottom: 16px; font-size: 0.9rem; }
 
 .paymentNote { background: #fef3c7; border: 1px solid #fde68a; padding: 14px 18px; border-radius: 10px; font-size: 0.8rem; color: #92400e; margin-top: 20px; line-height: 1.5; }
+
+/* Verification docs */
+.docList { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.docRow { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; }
+.docInfo { flex: 1; min-width: 0; }
+.docLabel { font-size: 0.85rem; font-weight: 700; color: #111827; margin: 0 0 2px; }
+.docDesc { font-size: 0.8rem; color: #6b7280; margin: 0 0 4px; }
+.docMeta { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+.docNote { font-size: 0.78rem; color: #374151; margin: 4px 0 0; font-style: italic; }
+.docRight { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.docStatus { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: capitalize; }
+.docLink { font-size: 0.8rem; color: #4f46e5; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.docLink:hover { text-decoration: underline; }
 
 /* Modal */
 .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; z-index: 999; animation: fadeIn 0.2s; }

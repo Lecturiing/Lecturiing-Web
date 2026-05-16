@@ -17,7 +17,6 @@ const VERIFICATION_COLORS = {
 };
 
 const TABS = ['Overview', 'Lecturers', 'Jobs', 'Revenue'];
-const PLATFORM_COMMISSION = 0.10; // 10% commission
 
 export default function InstitutionDetail({ id }) {
   const [institution, setInstitution] = useState(null);
@@ -34,6 +33,9 @@ export default function InstitutionDetail({ id }) {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [expandedLec, setExpandedLec] = useState(null);
+  const [lecTxs, setLecTxs] = useState({}); // { [lecturerId]: { loading, transactions } }
 
   useEffect(() => {
     adminService.getInstitution(id)
@@ -56,23 +58,33 @@ export default function InstitutionDetail({ id }) {
   const statusStyle = STATUS_COLORS[institution.status] || STATUS_COLORS.active;
   const verificationStyle = VERIFICATION_COLORS[institution.verificationStatus] || VERIFICATION_COLORS.verified;
 
-  // Get lecturers and jobs from populated API response
   const institutionLecturers = institution.lecturers ?? [];
   const institutionJobs = institution.jobs ?? [];
+  const verificationDocs = institution.verificationDocs ?? [];
+  const revenue = institution.revenue ?? { allTime: 0, thisMonth: 0 };
 
-  // Calculate revenue breakdown
-  const lecturerPayments = institutionLecturers.map((lec) => ({
-    lecturer: lec,
-    hours: lec.hoursThisMonth,
-    rate: lec.rate,
-    grossPay: lec.hoursThisMonth * lec.rate,
-    commission: lec.hoursThisMonth * lec.rate * PLATFORM_COMMISSION,
-    netPay: lec.hoursThisMonth * lec.rate * (1 - PLATFORM_COMMISSION),
-  }));
+  const handleAction = async (decision) => {
+    setVerifyLoading(true);
+    try {
+      await adminService.reviewVerification(id, decision);
+      setInstitution((prev) => ({
+        ...prev,
+        verificationStatus: decision === 'approve' ? 'verified' : 'failed',
+      }));
+    } catch (_) {}
+    setVerifyLoading(false);
+  };
 
-  const totalGrossPay = lecturerPayments.reduce((sum, p) => sum + p.grossPay, 0);
-  const totalCommission = lecturerPayments.reduce((sum, p) => sum + p.commission, 0);
-  const totalNetPay = lecturerPayments.reduce((sum, p) => sum + p.netPay, 0);
+  const handleToggleLec = (lecturerId) => {
+    if (expandedLec === lecturerId) { setExpandedLec(null); return; }
+    setExpandedLec(lecturerId);
+    if (!lecTxs[lecturerId]) {
+      setLecTxs((prev) => ({ ...prev, [lecturerId]: { loading: true, transactions: [] } }));
+      adminService.getLecturerTransactions(id, lecturerId)
+        .then((data) => setLecTxs((prev) => ({ ...prev, [lecturerId]: { loading: false, transactions: data?.transactions ?? [] } })))
+        .catch(() => setLecTxs((prev) => ({ ...prev, [lecturerId]: { loading: false, transactions: [] } })));
+    }
+  };
 
   const handleSuspendToggle = async () => {
     const newStatus = institution.status === 'active' ? 'suspended' : 'active';
@@ -165,7 +177,7 @@ export default function InstitutionDetail({ id }) {
             className={styles.verificationBadge}
             style={{ background: verificationStyle.bg, color: verificationStyle.text }}
           >
-            {institution.verificationStatus.replace('_', ' ')}
+            {(institution.verificationStatus ?? '').replace('_', ' ')}
           </span>
         </div>
       </div>
@@ -173,22 +185,20 @@ export default function InstitutionDetail({ id }) {
       {/* Stats Cards */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <p className={styles.statLabel}>Active Jobs</p>
+          <p className={styles.statLabel}>Jobs Posted</p>
           <p className={styles.statValue}>{institutionJobs.length}</p>
         </div>
         <div className={styles.statCard}>
-          <p className={styles.statLabel}>Lecturers</p>
+          <p className={styles.statLabel}>Hired Lecturers</p>
           <p className={styles.statValue}>{institutionLecturers.length}</p>
         </div>
         <div className={styles.statCard}>
-          <p className={styles.statLabel}>Total Hours (This Month)</p>
-          <p className={styles.statValue}>
-            {institutionLecturers.reduce((sum, l) => sum + l.hoursThisMonth, 0)}
-          </p>
+          <p className={styles.statLabel}>Commission (This Month)</p>
+          <p className={styles.statValue}>${revenue.thisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
         <div className={styles.statCard}>
-          <p className={styles.statLabel}>Platform Commission</p>
-          <p className={styles.statValue}>${totalCommission.toLocaleString()}</p>
+          <p className={styles.statLabel}>Commission (All Time)</p>
+          <p className={styles.statValue}>${revenue.allTime.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -210,27 +220,107 @@ export default function InstitutionDetail({ id }) {
         {/* Overview Tab */}
         {activeTab === 'Overview' && (
           <div className={styles.overviewGrid}>
-            {/* Contact Info */}
+            {/* Profile Info */}
             <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>Contact Information</h3>
+              <h3 className={styles.sectionTitle}>Institution Profile</h3>
               <div className={styles.contactGrid}>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Email</span>
+                  <a href={`mailto:${institution.email}`} className={styles.contactLink}>{institution.email}</a>
+                </div>
                 <div className={styles.contactRow}>
                   <span className={styles.contactLabel}>Contact Person</span>
                   <span className={styles.contactValue}>{institution.contactName || '—'}</span>
                 </div>
                 <div className={styles.contactRow}>
-                  <span className={styles.contactLabel}>Email</span>
+                  <span className={styles.contactLabel}>Contact Email</span>
                   {institution.contactEmail ? (
-                    <a href={`mailto:${institution.contactEmail}`} className={styles.contactLink}>
-                      {institution.contactEmail}
-                    </a>
+                    <a href={`mailto:${institution.contactEmail}`} className={styles.contactLink}>{institution.contactEmail}</a>
                   ) : <span className={styles.contactValue}>—</span>}
                 </div>
                 <div className={styles.contactRow}>
                   <span className={styles.contactLabel}>Phone</span>
                   <span className={styles.contactValue}>{institution.contactPhone || '—'}</span>
                 </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Address</span>
+                  <span className={styles.contactValue}>{institution.address || '—'}</span>
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Size</span>
+                  <span className={styles.contactValue}>{institution.size || '—'}</span>
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Website</span>
+                  {institution.website ? (
+                    <a href={institution.website} target="_blank" rel="noreferrer" className={styles.contactLink}>{institution.website}</a>
+                  ) : <span className={styles.contactValue}>—</span>}
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>LinkedIn</span>
+                  {institution.linkedIn ? (
+                    <a href={institution.linkedIn} target="_blank" rel="noreferrer" className={styles.contactLink}>{institution.linkedIn}</a>
+                  ) : <span className={styles.contactValue}>—</span>}
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Email Verified</span>
+                  <span className={styles.contactValue}>{institution.emailVerified ? '✓ Yes' : '✕ No'}</span>
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Onboarding</span>
+                  <span className={styles.contactValue}>{institution.onboardingComplete ? '✓ Complete' : 'Incomplete'}</span>
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Plan</span>
+                  <span className={styles.contactValue}>{institution.plan}</span>
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Joined</span>
+                  <span className={styles.contactValue}>{institution.joinedAt ? new Date(institution.joinedAt).toLocaleDateString() : '—'}</span>
+                </div>
+                <div className={styles.contactRow}>
+                  <span className={styles.contactLabel}>Last Active</span>
+                  <span className={styles.contactValue}>{institution.lastActive ? new Date(institution.lastActive).toLocaleDateString() : '—'}</span>
+                </div>
               </div>
+            </div>
+
+            {/* Verification Documents */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Verification Documents</h3>
+              {verificationDocs.length === 0 ? (
+                <p className={styles.contactValue} style={{ color: '#9ca3af' }}>No documents submitted.</p>
+              ) : (
+                <div className={styles.docList}>
+                  {verificationDocs.map((doc) => (
+                    <div key={doc.id} className={styles.docRow}>
+                      <div className={styles.docInfo}>
+                        <p className={styles.docLabel}>{doc.label}</p>
+                        {doc.description && <p className={styles.docDesc}>{doc.description}</p>}
+                        <p className={styles.docMeta}>
+                          Submitted {doc.submittedAt ? new Date(doc.submittedAt).toLocaleDateString() : '—'}
+                          {doc.reviewedAt ? ` · Reviewed ${new Date(doc.reviewedAt).toLocaleDateString()}` : ''}
+                        </p>
+                        {doc.reviewNote && <p className={styles.docNote}>{doc.reviewNote}</p>}
+                      </div>
+                      <div className={styles.docRight}>
+                        <span
+                          className={styles.docStatus}
+                          style={{
+                            background: doc.status === 'approved' ? '#d1fae5' : doc.status === 'rejected' ? '#fee2e2' : '#fef3c7',
+                            color: doc.status === 'approved' ? '#065f46' : doc.status === 'rejected' ? '#991b1b' : '#92400e',
+                          }}
+                        >
+                          {doc.status}
+                        </span>
+                        <a href={doc.fileUrl} target="_blank" rel="noreferrer" className={styles.docLink}>
+                          View →
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Actions */}
@@ -242,12 +332,14 @@ export default function InstitutionDetail({ id }) {
                     <button
                       className={`${styles.actionBtn} ${styles.actionApprove}`}
                       onClick={() => handleAction('approve')}
+                      disabled={verifyLoading}
                     >
                       ✓ Approve Verification
                     </button>
                     <button
                       className={`${styles.actionBtn} ${styles.actionReject}`}
                       onClick={() => handleAction('reject')}
+                      disabled={verifyLoading}
                     >
                       ✕ Reject Verification
                     </button>
@@ -286,43 +378,117 @@ export default function InstitutionDetail({ id }) {
             </div>
             {institutionLecturers.length === 0 ? (
               <div className={styles.emptyState}>
-                <p className={styles.emptyTitle}>No lecturers attached</p>
+                <p className={styles.emptyTitle}>No lecturers hired yet</p>
                 <p className={styles.emptySub}>This institution hasn&apos;t hired any lecturers yet.</p>
               </div>
             ) : (
               <div className={styles.lecturersList}>
-                {institutionLecturers.map((lec) => (
-                  <div key={lec.id} className={styles.lecturerRow}>
-                    <div className={styles.lecturerLeft}>
-                      <div className={styles.lecturerAvatar} style={{ background: lec.color }}>
-                        {lec.initials}
+                {institutionLecturers.map((lec) => {
+                  const isOpen = expandedLec === lec.id;
+                  const txData = lecTxs[lec.id] ?? { loading: false, transactions: [] };
+                  const totalPaid = txData.transactions
+                    .filter((t) => t.status !== 'failed')
+                    .reduce((s, t) => s + parseFloat(t.amount ?? 0), 0);
+
+                  return (
+                    <div key={lec.hireId} className={`${styles.lecturerCard} ${isOpen ? styles.lecturerCardOpen : ''}`}>
+                      {/* Header row — click to expand */}
+                      <div className={styles.lecturerRow} onClick={() => handleToggleLec(lec.id)} style={{ cursor: 'pointer' }}>
+                        <div className={styles.lecturerLeft}>
+                          <div className={styles.lecturerAvatar} style={{ background: lec.color }}>
+                            {lec.initials}
+                          </div>
+                          <div className={styles.lecturerInfo}>
+                            <p className={styles.lecturerName}>{lec.name}</p>
+                            <p className={styles.lecturerTitle}>{lec.title || '—'}</p>
+                            <p className={styles.lecturerMeta}>
+                              {lec.field || '—'} · {lec.qualification || '—'} · Hired {lec.hiredAt ? new Date(lec.hiredAt).toLocaleDateString() : '—'}
+                            </p>
+                            {lec.jobTitle && <p className={styles.lecturerMeta}>Job: {lec.jobTitle}</p>}
+                          </div>
+                        </div>
+                        <div className={styles.lecturerStats}>
+                          <div className={styles.lecturerStat}>
+                            <span className={styles.lecturerStatLabel}>Rate</span>
+                            <span className={styles.lecturerStatValue}>${lec.hourlyRate}/{lec.contractType === 'monthly' ? 'mo' : 'hr'}</span>
+                          </div>
+                          <div className={styles.lecturerStat}>
+                            <span className={styles.lecturerStatLabel}>Contract</span>
+                            <span className={styles.lecturerStatValue}>{lec.contractType}</span>
+                          </div>
+                          <div className={styles.lecturerStat}>
+                            <span className={styles.lecturerStatLabel}>Status</span>
+                            <span className={styles.lecturerStatValue} style={{ color: lec.hireStatus === 'active' ? '#059669' : '#f59e0b' }}>
+                              {lec.hireStatus}
+                            </span>
+                          </div>
+                          {(lec.startDate || lec.endDate) && (
+                            <div className={styles.lecturerStat}>
+                              <span className={styles.lecturerStatLabel}>Period</span>
+                              <span className={styles.lecturerStatValue}>
+                                {lec.startDate ? new Date(lec.startDate).toLocaleDateString() : '—'}
+                                {' → '}
+                                {lec.endDate ? new Date(lec.endDate).toLocaleDateString() : 'Ongoing'}
+                              </span>
+                            </div>
+                          )}
+                          <div className={styles.lecturerStat}>
+                            <span className={styles.lecturerStatLabel}>Total Paid</span>
+                            <span className={styles.lecturerStatValue} style={{ color: '#4f46e5' }}>
+                              {totalPaid > 0 ? `$${totalPaid.toFixed(2)}` : '—'}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={styles.lecChevron} style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
                       </div>
-                      <div className={styles.lecturerInfo}>
-                        <p className={styles.lecturerName}>{lec.name}</p>
-                        <p className={styles.lecturerTitle}>{lec.title}</p>
-                        <p className={styles.lecturerMeta}>
-                          {lec.field} · {lec.qualification} · Hired {lec.hiredDate}
-                        </p>
-                      </div>
+
+                      {/* Expanded: transaction history */}
+                      {isOpen && (
+                        <div className={styles.lecTxPanel}>
+                          <p className={styles.lecTxTitle}>Payment History</p>
+                          {txData.loading ? (
+                            <p className={styles.lecTxEmpty}>Loading…</p>
+                          ) : txData.transactions.length === 0 ? (
+                            <p className={styles.lecTxEmpty}>No payments made to this lecturer yet.</p>
+                          ) : (
+                            <>
+                              <div className={styles.lecTxList}>
+                                {txData.transactions.map((tx) => {
+                                  const gross      = parseFloat(tx.amount ?? 0);
+                                  const commission = parseFloat(tx.metadata?.commission ?? 0);
+                                  const payout     = parseFloat(tx.metadata?.payout ?? 0);
+                                  const isFailed   = tx.status === 'failed';
+                                  return (
+                                    <div key={tx.id} className={`${styles.lecTxRow} ${isFailed ? styles.lecTxRowFailed : ''}`}>
+                                      <div className={styles.lecTxInfo}>
+                                        <p className={styles.lecTxDesc}>{tx.description || 'Direct payment'}</p>
+                                        <p className={styles.lecTxMeta}>
+                                          {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                                          {commission > 0 && <> · Fee: ${commission.toFixed(2)}</>}
+                                          {payout > 0 && <> · Lecturer got: ${payout.toFixed(2)}</>}
+                                        </p>
+                                      </div>
+                                      <div className={styles.lecTxRight}>
+                                        <span className={`${styles.lecTxAmount} ${isFailed ? styles.lecTxAmountFailed : ''}`}>
+                                          − {tx.currency ?? 'USD'} {gross.toFixed(2)}
+                                        </span>
+                                        {isFailed && <span className={styles.lecTxFailedBadge}>Failed</span>}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <div className={styles.lecTxSummary}>
+                                <span>Total paid</span>
+                                <span>${totalPaid.toFixed(2)}</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className={styles.lecturerStats}>
-                      <div className={styles.lecturerStat}>
-                        <span className={styles.lecturerStatLabel}>Rate</span>
-                        <span className={styles.lecturerStatValue}>${lec.rate}/hr</span>
-                      </div>
-                      <div className={styles.lecturerStat}>
-                        <span className={styles.lecturerStatLabel}>Hours (This Month)</span>
-                        <span className={styles.lecturerStatValue}>{lec.hoursThisMonth}h</span>
-                      </div>
-                      <div className={styles.lecturerStat}>
-                        <span className={styles.lecturerStatLabel}>Gross Pay</span>
-                        <span className={styles.lecturerStatValue}>
-                          ${(lec.hoursThisMonth * lec.rate).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -388,91 +554,30 @@ export default function InstitutionDetail({ id }) {
         {/* Revenue Tab */}
         {activeTab === 'Revenue' && (
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Revenue Breakdown (This Month)</h3>
-
-            {/* Summary Cards */}
+            <h3 className={styles.sectionTitle}>Platform Commission</h3>
             <div className={styles.revenueCards}>
               <div className={styles.revenueCard}>
-                <p className={styles.revenueLabel}>Total Lecturer Payments</p>
-                <p className={styles.revenueValue}>${totalGrossPay.toLocaleString()}</p>
-                <p className={styles.revenueSub}>Before commission</p>
-              </div>
-              <div className={styles.revenueCard}>
-                <p className={styles.revenueLabel}>Platform Commission (10%)</p>
+                <p className={styles.revenueLabel}>This Month</p>
                 <p className={styles.revenueValue} style={{ color: '#dc2626' }}>
-                  ${totalCommission.toLocaleString()}
+                  ${revenue.thisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
-                <p className={styles.revenueSub}>Revenue from this institution</p>
+                <p className={styles.revenueSub}>Reimbursement commissions + escrow fees</p>
               </div>
               <div className={styles.revenueCard}>
-                <p className={styles.revenueLabel}>Lecturer Net Pay</p>
-                <p className={styles.revenueValue}>${totalNetPay.toLocaleString()}</p>
-                <p className={styles.revenueSub}>After 10% commission</p>
+                <p className={styles.revenueLabel}>All Time</p>
+                <p className={styles.revenueValue} style={{ color: '#dc2626' }}>
+                  ${revenue.allTime.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+                <p className={styles.revenueSub}>Total platform revenue from this institution</p>
+              </div>
+              <div className={styles.revenueCard}>
+                <p className={styles.revenueLabel}>Hired Lecturers</p>
+                <p className={styles.revenueValue}>{institutionLecturers.length}</p>
+                <p className={styles.revenueSub}>Active engagements</p>
               </div>
             </div>
-
-            {/* Detailed Breakdown */}
-            <div className={styles.paymentTable}>
-              <h4 className={styles.paymentTableTitle}>Lecturer Payment Details</h4>
-              {lecturerPayments.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <p className={styles.emptyTitle}>No payments this month</p>
-                  <p className={styles.emptySub}>No lecturers have logged hours yet.</p>
-                </div>
-              ) : (
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Lecturer</th>
-                      <th>Hours</th>
-                      <th>Rate</th>
-                      <th>Gross Pay</th>
-                      <th>Commission (10%)</th>
-                      <th>Net Pay</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lecturerPayments.map((payment) => (
-                      <tr key={payment.lecturer.id}>
-                        <td>
-                          <div className={styles.tableInstCell}>
-                            <div
-                              className={styles.tableAvatar}
-                              style={{ background: payment.lecturer.color }}
-                            >
-                              {payment.lecturer.initials}
-                            </div>
-                            <span className={styles.tableName}>{payment.lecturer.name}</span>
-                          </div>
-                        </td>
-                        <td>{payment.hours}h</td>
-                        <td>${payment.rate}/hr</td>
-                        <td className={styles.tableAmount}>${payment.grossPay.toLocaleString()}</td>
-                        <td className={styles.tableCommission}>
-                          -${payment.commission.toLocaleString()}
-                        </td>
-                        <td className={styles.tableNetPay}>${payment.netPay.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                    <tr className={styles.tableTotalRow}>
-                      <td colSpan="3"><strong>Total</strong></td>
-                      <td className={styles.tableAmount}>
-                        <strong>${totalGrossPay.toLocaleString()}</strong>
-                      </td>
-                      <td className={styles.tableCommission}>
-                        <strong>-${totalCommission.toLocaleString()}</strong>
-                      </td>
-                      <td className={styles.tableNetPay}>
-                        <strong>${totalNetPay.toLocaleString()}</strong>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              )}
-              <div className={styles.paymentNote}>
-                <strong>Payment Schedule:</strong> Lecturers are paid at the end of each month based on their logged hours.
-                Platform retains 10% commission from all payments.
-              </div>
+            <div className={styles.paymentNote}>
+              Commission is collected at 10% on direct lecturer reimbursements and 2% on escrow contract locks.
             </div>
           </div>
         )}

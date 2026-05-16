@@ -46,11 +46,6 @@ export default function OffersPage() {
       .catch(() => {});
   }, []);
 
-  const updateOfferStatus = async (id, status) => {
-    try { await offerService.updateStatus(id, status); } catch (_) {}
-    setOffers((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
-  };
-
   const openSendModal = (offer) => {
     const jobDocs = offer.sentDocumentIds ?? [];
     setSendModal(offer);
@@ -101,6 +96,7 @@ export default function OffersPage() {
           const sent = sentState[offer.id] ?? offer.sentDocumentIds ?? [];
           const signed = offer.signedDocumentIds ?? [];
           const allSigned = sent.length > 0 && sent.every((d) => signed.includes(d));
+          const hasHellosign = !!offer.hellosignRequestId;
 
           return (
             <div key={offer.id} className={styles.card} style={{ borderColor: sm.border }}>
@@ -132,12 +128,7 @@ export default function OffersPage() {
               {offer.status === 'pending' && (
                 <div className={styles.responseBox} style={{ background: sm.bg }}>
                   <p className={styles.responseLabel}>Awaiting candidate response</p>
-                  <p className={styles.responseNote}>The candidate has been notified via email and can approve or decline from their portal.</p>
-                  <div className={styles.responseActions}>
-                    <span className={styles.simulateNote}>Demo — simulate candidate action:</span>
-                    <button className={styles.approveBtn} onClick={() => updateOfferStatus(offer.id, 'approved')}>✓ Candidate Approves</button>
-                    <button className={styles.declineBtn} onClick={() => updateOfferStatus(offer.id, 'declined')}>✕ Candidate Declines</button>
-                  </div>
+                  <p className={styles.responseNote}>The candidate has been notified and can approve or decline from their portal.</p>
                 </div>
               )}
 
@@ -160,9 +151,17 @@ export default function OffersPage() {
                       <button className={styles.sendDocsBtn} onClick={() => openSendModal(offer)}>
                         Send for E-Signature
                       </button>
+                    ) : allSigned ? (
+                      <span className={styles.sentBadge} style={{ background: '#d1fae5', color: '#065f46' }}>
+                        ✓ All Signed
+                      </span>
+                    ) : hasHellosign ? (
+                      <span className={styles.sentBadge} style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                        ✍ Signing via HelloSign
+                      </span>
                     ) : (
                       <span className={styles.sentBadge}>
-                        {allSigned ? '✓ All Signed' : '⏳ Awaiting Signatures'}
+                        ⏳ Awaiting Signatures
                       </span>
                     )}
                   </div>

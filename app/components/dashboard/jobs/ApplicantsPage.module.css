@@ -703,6 +703,62 @@
 .interviewBoxLink:hover { text-decoration: underline; }
 .interviewBoxNote { font-size: 0.8rem; color: #6b7280; font-style: italic; margin: 0; }
 
+/* Offer rate row */
+.offerRateRow { display: flex; gap: 10px; margin-bottom: 12px; }
+.offerRateField { flex: 1 1 60%; }
+.offerCurrencyField { flex: 1 1 40%; }
+
+/* Hired box */
+.hiredBox { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+.hiredBoxTitle { font-size: 0.85rem; font-weight: 700; color: #92400e; margin: 0 0 4px; }
+.hiredBoxSub   { font-size: 0.8rem; color: #78350f; margin: 0; }
+
+/* Application Detail rows */
+.appDetailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 12px;
+}
+.appDetailRow:last-child { border-bottom: none; }
+.appDetailLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.appDetailValue {
+  font-size: 0.85rem;
+  color: #111827;
+  text-align: right;
+}
+.appDetailLink {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #4f46e5;
+  text-decoration: none;
+}
+.appDetailLink:hover { text-decoration: underline; }
+.appDetailCoverNote {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+}
+.appDetailCoverText {
+  font-size: 0.83rem;
+  color: #374151;
+  line-height: 1.55;
+  margin: 0;
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
 /* Drawer actions */
 .drawerActions {
   display: flex;

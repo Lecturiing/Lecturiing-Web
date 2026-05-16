@@ -27,18 +27,28 @@ const TABS = ['Overview', 'Revenue', 'Institutions', 'Jobs & Lecturers'];
 
 const DEFAULT_STATS = {
   institutions: { total: 0, active: 0, suspended: 0, pending: 0 },
-  lecturers: { total: 0, active: 0 },
-  jobs: { total: 0, active: 0, filled: 0 },
+  lecturers:    { total: 0, active: 0 },
+  jobs:         { total: 0, active: 0, filled: 0 },
+  revenue:      { thisMonth: 0, lastMonth: 0, growth: 0, allTime: 0, reimbursementThisMonth: 0, reimbursementAllTime: 0, escrowThisMonth: 0, escrowAllTime: 0 },
+};
+
+const DEFAULT_ANALYTICS = {
+  totalRevenue: 0, reimbursementRevenue: 0, escrowRevenue: 0,
+  reimbursementCount: 0, escrowCount: 0,
 };
 
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('Overview');
   const [stats, setStats] = useState(DEFAULT_STATS);
+  const [analytics, setAnalytics] = useState(DEFAULT_ANALYTICS);
   const [institutions, setInstitutions] = useState([]);
 
   useEffect(() => {
     adminService.getStats()
       .then((data) => setStats({ ...DEFAULT_STATS, ...data }))
+      .catch(() => {});
+    adminService.getAnalytics()
+      .then((data) => setAnalytics({ ...DEFAULT_ANALYTICS, ...data }))
       .catch(() => {});
     adminService.listInstitutions()
       .then((data) => setInstitutions(Array.isArray(data) ? data : (data?.institutions ?? [])))
@@ -87,10 +97,14 @@ export default function AnalyticsPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <span className={styles.kpiLabel}>Total Revenue</span>
-                <span className={styles.kpiTrend}>↑ 12.6%</span>
+                {stats.revenue.growth !== 0 && (
+                  <span className={stats.revenue.growth >= 0 ? styles.kpiTrend : styles.kpiTrendNeutral}>
+                    {stats.revenue.growth >= 0 ? '↑' : '↓'} {Math.abs(stats.revenue.growth)}%
+                  </span>
+                )}
               </div>
-              <p className={styles.kpiValue}>$32,550</p>
-              <p className={styles.kpiSub}>This month</p>
+              <p className={styles.kpiValue}>${stats.revenue.thisMonth >= 1000 ? (stats.revenue.thisMonth / 1000).toFixed(1) + 'k' : stats.revenue.thisMonth.toFixed(2)}</p>
+              <p className={styles.kpiSub}>This month · ${analytics.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} all time</p>
             </div>
 
             <div className={styles.kpiCard}>
@@ -169,19 +183,19 @@ export default function AnalyticsPage() {
         <div className={styles.content}>
           <div className={styles.revenueGrid}>
             <div className={styles.revenueCard}>
-              <p className={styles.revenueLabel}>Total Revenue (7 months)</p>
-              <p className={styles.revenueValue}>$182,450</p>
-              <p className={styles.revenueMeta}>Avg $26,064/month</p>
+              <p className={styles.revenueLabel}>Total Revenue (All Time)</p>
+              <p className={styles.revenueValue}>${analytics.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className={styles.revenueMeta}>Platform commissions &amp; fees</p>
             </div>
             <div className={styles.revenueCard}>
-              <p className={styles.revenueLabel}>This Month</p>
-              <p className={styles.revenueValue}>$32,550</p>
-              <p className={styles.revenueMeta}>↑ $3,650 vs last month</p>
+              <p className={styles.revenueLabel}>Reimbursement Commission (10%)</p>
+              <p className={styles.revenueValue}>${analytics.reimbursementRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className={styles.revenueMeta}>{analytics.reimbursementCount} payment{analytics.reimbursementCount !== 1 ? 's' : ''} processed</p>
             </div>
             <div className={styles.revenueCard}>
-              <p className={styles.revenueLabel}>Projected Next Month</p>
-              <p className={styles.revenueValue}>$36,600</p>
-              <p className={styles.revenueMeta}>Based on current growth</p>
+              <p className={styles.revenueLabel}>Escrow Fees (2%)</p>
+              <p className={styles.revenueValue}>${analytics.escrowRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className={styles.revenueMeta}>{analytics.escrowCount} contract{analytics.escrowCount !== 1 ? 's' : ''} locked</p>
             </div>
           </div>
 

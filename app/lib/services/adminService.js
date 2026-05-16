@@ -21,6 +21,8 @@ export const adminService = {
     api.delete(`/api/admin/institutions/${institutionId}/jobs/${jobId}`),
   getJobApplications: (institutionId, jobId) =>
     api.get(`/api/admin/institutions/${institutionId}/jobs/${jobId}/applications`),
+  getLecturerTransactions: (institutionId, lecturerId) =>
+    api.get(`/api/admin/institutions/${institutionId}/lecturers/${lecturerId}/transactions`),
 
   // Lecturers
   listLecturers: (params = {}) => {

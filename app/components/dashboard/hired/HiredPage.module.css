@@ -1,89 +1,199 @@
-.page { display: flex; flex-direction: column; gap: 20px; max-width: 860px; }
+.page { display: flex; flex-direction: column; gap: 24px; max-width: 900px; }
 
-/* Summary */
+/* ── Loading ── */
+.loadingWrap { display: flex; justify-content: center; padding: 80px; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Summary ── */
 .summary { display: flex; gap: 14px; flex-wrap: wrap; }
-.summaryCard { flex: 1; min-width: 120px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
-.summaryNum { font-size: 1.6rem; font-weight: 800; color: #4f46e5; }
-.summaryLabel { font-size: 0.78rem; color: #6b7280; font-weight: 500; }
+.summaryCard {
+  flex: 1; min-width: 140px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+}
+.summaryIcon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.summaryNum { font-size: 1.5rem; font-weight: 800; line-height: 1; margin: 0 0 2px; }
+.summaryLabel { font-size: 0.75rem; color: #6b7280; font-weight: 500; margin: 0; }
 
-/* List */
+/* ── Empty ── */
+.empty {
+  text-align: center; padding: 56px 32px;
+  background: #fff; border: 1.5px dashed #e5e7eb; border-radius: 16px;
+}
+.emptyIcon { color: #d1d5db; margin-bottom: 12px; display: flex; justify-content: center; }
+.emptyTitle { font-size: 1rem; font-weight: 700; color: #374151; margin: 0 0 6px; }
+.emptyNote { font-size: 0.82rem; color: #9ca3af; margin: 0; }
+
+/* ── List ── */
 .list { display: flex; flex-direction: column; gap: 12px; }
-.empty { text-align: center; padding: 40px; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; color: #6b7280; font-size: 0.88rem; }
-.emptyNote { font-size: 0.78rem; color: #9ca3af; margin: 4px 0 0; }
 
-/* Card */
-.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; transition: border-color 0.15s; }
-.card:hover { border-color: #c4b5fd; }
-.cardOpen { border-color: #4f46e5; }
+/* ── Card ── */
+.card {
+  background: #fff; border: 1.5px solid #e5e7eb; border-radius: 16px;
+  overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.card:hover { border-color: #c4b5fd; box-shadow: 0 2px 16px rgba(79,70,229,0.07); }
+.cardOpen { border-color: #4f46e5; box-shadow: 0 4px 24px rgba(79,70,229,0.1); }
 
-/* Card Header */
-.cardHeader { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; cursor: pointer; }
-.avatar { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.95rem; font-weight: 700; flex-shrink: 0; }
+/* ── Card Header ── */
+.cardHeader {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 22px; cursor: pointer; user-select: none;
+}
+
+.avatar { width: 56px; height: 56px; border-radius: 14px; object-fit: cover; flex-shrink: 0; }
+.avatarFallback {
+  width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1rem; font-weight: 800; letter-spacing: 0.02em;
+}
+
 .headerInfo { flex: 1; min-width: 0; }
-.headerTop { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; flex-wrap: wrap; }
-.lecturerName { font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0; }
-.statusBadge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-.jobTitle { font-size: 0.82rem; color: #4f46e5; font-weight: 600; margin: 0 0 6px; }
-.metaRow { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #6b7280; flex-wrap: wrap; }
-.rateChip { color: #111827; font-weight: 700; }
-.headerRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
-.signedCount { display: flex; flex-direction: column; align-items: center; }
-.signedNum { font-size: 1.2rem; font-weight: 800; color: #059669; line-height: 1; }
-.signedLabel { font-size: 0.68rem; color: #6b7280; }
-.chevron { font-size: 0.65rem; color: #9ca3af; }
+.nameRow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.lecName { font-size: 1rem; font-weight: 800; color: #111827; margin: 0; }
+.statusBadge { font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+.jobTitle { font-size: 0.83rem; color: #4f46e5; font-weight: 600; margin: 0 0 8px; }
 
-/* Expanded */
-.expandedBody { border-top: 1px solid #f3f4f6; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.metaRow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.74rem; color: #6b7280; background: #f3f4f6;
+  border-radius: 20px; padding: 3px 9px;
+}
+.chipIcon { display: flex; align-items: center; opacity: 0.7; }
+
+.specRow { display: flex; gap: 6px; flex-wrap: wrap; }
+.specChip {
+  font-size: 0.72rem; color: #4f46e5; background: #ede9fe;
+  border-radius: 6px; padding: 2px 8px; font-weight: 600;
+}
+
+.headerRight { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; padding-top: 2px; }
+.stars { display: flex; align-items: center; gap: 2px; }
+.starFilled { color: #f59e0b; font-size: 0.8rem; }
+.starEmpty  { color: #d1d5db; font-size: 0.8rem; }
+.ratingNum  { font-size: 0.74rem; font-weight: 700; color: #374151; margin-left: 4px; }
+.docsBadge { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.docsNum { font-size: 1.1rem; font-weight: 800; color: #059669; line-height: 1; }
+.docsLabel { font-size: 0.66rem; color: #9ca3af; }
+
+/* ── Expanded Body ── */
+.body { border-top: 1.5px solid #f3f4f6; }
+
+.bodyGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+@media (max-width: 640px) { .bodyGrid { grid-template-columns: 1fr; } }
+
+.section { padding: 22px 24px; }
+.section + .section { border-left: 1.5px solid #f3f4f6; }
+@media (max-width: 640px) { .section + .section { border-left: none; border-top: 1.5px solid #f3f4f6; } }
+
+.sectionTitle { font-size: 0.82rem; font-weight: 800; color: #374151; margin: 0 0 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.bio { font-size: 0.83rem; color: #4b5563; line-height: 1.6; margin: 0 0 14px; }
+
+.detailGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 14px; }
+.detailItem { display: flex; flex-direction: column; gap: 2px; }
+.detailLabel { font-size: 0.68rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.detailValue { font-size: 0.83rem; color: #111827; font-weight: 600; }
+
+.contactRow { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.contactLink {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: #4f46e5; text-decoration: none; font-weight: 500;
+}
+.contactLink:hover { text-decoration: underline; }
+
+.allSpecs { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* Terms */
-.sectionTitle { font-size: 0.88rem; font-weight: 700; color: #374151; margin: 0 0 12px; }
-.termsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-.termItem { display: flex; flex-direction: column; gap: 3px; }
-.termLabel { font-size: 0.72rem; color: #9ca3af; font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
-.termValue { font-size: 0.88rem; color: #111827; font-weight: 600; }
+.termsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 16px; }
+.termItem { display: flex; flex-direction: column; gap: 2px; }
+.termLabel { font-size: 0.68rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.termValue { font-size: 0.85rem; color: #111827; font-weight: 600; }
 
-/* Signed docs */
-.docList { display: flex; flex-direction: column; gap: 8px; }
-.docRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fafafa; }
-.docLeft { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-.docIcon { color: #4f46e5; flex-shrink: 0; }
-.docName { font-size: 0.85rem; font-weight: 600; color: #111827; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.docMeta { font-size: 0.72rem; color: #9ca3af; margin: 0; }
-.docRight { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.signedBadge { font-size: 0.72rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 10px; border-radius: 20px; }
-.viewDocBtn { background: #ede9fe; color: #4f46e5; border: none; border-radius: 7px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-.viewDocBtn:hover { background: #ddd6fe; }
+/* Signed doc IDs */
+.signedWrap { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; }
+.signedTitle { font-size: 0.72rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 8px; }
+.signedList { display: flex; flex-direction: column; gap: 6px; }
+.signedIdRow { display: flex; align-items: center; gap: 8px; }
+.signedCheck { color: #059669; font-size: 0.8rem; font-weight: 700; }
+.signedId { font-size: 0.78rem; font-weight: 600; color: #374151; min-width: 80px; }
+.signedIdVal { font-size: 0.72rem; color: #9ca3af; font-family: monospace; }
 
-/* Modal */
-.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
-.modalHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 0; flex-shrink: 0; }
-.modalTitle { font-size: 1rem; font-weight: 800; color: #111827; margin: 0 0 3px; }
-.modalSub { font-size: 0.78rem; color: #059669; font-weight: 600; margin: 0; }
-.modalClose { background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.modalClose:hover { background: #e5e7eb; }
-.modalBody { padding: 16px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
-.modalFooter { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid #f3f4f6; flex-shrink: 0; }
-.downloadBtn { flex: 2; background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
-.downloadBtn:hover { background: #4338ca; }
-.modalClose2 { flex: 1; background: #f3f4f6; color: #374151; border: none; border-radius: 9px; padding: 11px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
-.modalClose2:hover { background: #e5e7eb; }
+/* ── Billing ── */
+.billing {
+  margin: 0 24px 20px;
+  background: #f8faff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.billingHeader {
+  display: flex; align-items: center; gap: 8px;
+  color: #4f46e5; font-weight: 700; font-size: 0.88rem;
+}
+.billingTitle { margin: 0; font-size: 0.88rem; font-weight: 700; flex: 1; }
+.billingPaid { font-size: 0.75rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 10px; border-radius: 20px; }
 
-/* Signed Stamp */
-.signedStamp { display: flex; align-items: center; gap: 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px 16px; }
-.stampIcon { width: 32px; height: 32px; background: #059669; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
-.stampTitle { font-size: 0.88rem; font-weight: 700; color: #059669; margin: 0 0 2px; }
-.stampSub { font-size: 0.78rem; color: #065f46; margin: 0; }
+.billingFixed {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff; border: 1px solid #e0e7ff; border-radius: 10px; padding: 12px 16px;
+}
+.billingFixedLabel { font-size: 0.82rem; color: #6b7280; }
+.billingFixedAmt { font-size: 1.1rem; font-weight: 800; color: #111827; }
 
-/* Preview doc */
-.previewDoc { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
-.previewDocHeader { background: #f5f3ff; padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
-.previewDocTitle { font-size: 0.95rem; font-weight: 700; color: #1e1b4b; margin: 0 0 2px; }
-.previewDocSub { font-size: 0.72rem; color: #6b7280; margin: 0; }
-.previewDocBody { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; color: #374151; line-height: 1.5; }
-.previewEllipsis { color: #9ca3af; font-style: italic; font-size: 0.78rem; }
-.signatureSection { display: flex; gap: 24px; padding: 16px 18px; border-top: 1px solid #f3f4f6; }
-.sigBlock { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-.sigSigned { font-size: 0.82rem; font-weight: 700; color: #059669; border-bottom: 2px solid #059669; padding-bottom: 6px; font-style: italic; }
-.sigLabel { font-size: 0.72rem; color: #6b7280; margin: 0; }
-.sigDate { font-size: 0.68rem; color: #9ca3af; margin: 0; }
+.billingHours { display: flex; flex-direction: column; gap: 6px; }
+.billingLabel { font-size: 0.78rem; font-weight: 600; color: #374151; }
+.billingHoursRow { display: flex; align-items: center; gap: 10px; }
+.billingInput {
+  width: 100px; padding: 8px 12px; border: 1.5px solid #c7d2fe; border-radius: 8px;
+  font-size: 0.9rem; font-weight: 700; color: #111827; outline: none;
+  transition: border-color 0.15s;
+}
+.billingInput:focus { border-color: #4f46e5; }
+.billingHoursMeta { font-size: 0.82rem; color: #6b7280; font-weight: 500; }
+
+.billingBreakdown {
+  background: #fff; border: 1px solid #e0e7ff; border-radius: 10px;
+  padding: 10px 14px; display: flex; flex-direction: column; gap: 6px;
+}
+.billingRow {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.82rem; color: #374151;
+}
+.billingFee { color: #dc2626; font-weight: 600; }
+.billingPayout {
+  color: #059669; font-weight: 800; font-size: 0.88rem;
+  padding-top: 6px; border-top: 1px solid #e5e7eb; margin-top: 2px;
+}
+
+.billingError { font-size: 0.78rem; color: #dc2626; margin: 0; }
+
+.billingBtn {
+  align-self: flex-start; padding: 10px 22px; border-radius: 10px;
+  background: #4f46e5; color: #fff; font-size: 0.85rem; font-weight: 700;
+  border: none; cursor: pointer; transition: background 0.15s;
+}
+.billingBtn:hover:not(:disabled) { background: #4338ca; }
+.billingBtn:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+/* Actions */
+.actions {
+  display: flex; gap: 10px; padding: 14px 24px;
+  border-top: 1.5px solid #f3f4f6; background: #fafafa;
+}
+.actionBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 9px; font-size: 0.83rem; font-weight: 700;
+  background: #4f46e5; color: #fff; text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.actionBtn:hover { background: #4338ca; }
+.actionBtnGhost {
+  background: #fff; color: #374151; border: 1.5px solid #e5e7eb;
+}
+.actionBtnGhost:hover { background: #f3f4f6; }

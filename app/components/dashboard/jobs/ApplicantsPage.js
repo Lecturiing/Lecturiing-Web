@@ -9,14 +9,16 @@ import { applicationService } from '@/app/lib/services/applicationService';
 import { lecturerService } from '@/app/lib/services/lecturerService';
 import { documentService } from '@/app/lib/services/documentService';
 
-const STATUS_TABS = ['All', 'Pending', 'Shortlisted', 'Interview', 'Declined', 'Offer Sent'];
+const STATUS_TABS = ['All', 'Pending', 'Shortlisted', 'Interview', 'Declined', 'Offer Sent', 'Hired'];
 
 const STATUS_META = {
-  pending:              { label: 'Pending',       bg: '#f3f4f6', color: '#6b7280' },
-  shortlisted:          { label: 'Shortlisted',   bg: '#ede9fe', color: '#4f46e5' },
-  interview_scheduled:  { label: 'Interview',     bg: '#dbeafe', color: '#1d4ed8' },
-  declined:             { label: 'Declined',      bg: '#fee2e2', color: '#dc2626' },
-  offer_sent:           { label: 'Offer Sent',    bg: '#d1fae5', color: '#059669' },
+  pending:              { label: 'Pending',          bg: '#f3f4f6', color: '#6b7280' },
+  shortlisted:          { label: 'Shortlisted',      bg: '#ede9fe', color: '#4f46e5' },
+  interview_scheduled:  { label: 'Interview',        bg: '#dbeafe', color: '#1d4ed8' },
+  declined:             { label: 'Declined',         bg: '#fee2e2', color: '#dc2626' },
+  offer_sent:           { label: 'Offer Sent',       bg: '#d1fae5', color: '#059669' },
+  offer_accepted:       { label: 'Offer Accepted',   bg: '#ecfdf5', color: '#047857' },
+  hired:                { label: 'Hired',            bg: '#fef3c7', color: '#92400e' },
 };
 
 const TAB_STATUS_MAP = {
@@ -25,8 +27,11 @@ const TAB_STATUS_MAP = {
   Shortlisted: 'shortlisted',
   Interview: 'interview_scheduled',
   Declined: 'declined',
-  'Offer Sent': 'offer_sent',
+  'Offer Sent': ['offer_sent', 'offer_accepted'],
+  Hired: 'hired',
 };
+
+const CURRENCIES = ['USD', 'GBP', 'EUR', 'NGN', 'ZAR', 'GHS', 'KES'];
 
 export default function ApplicantsPage({ jobId }) {
   const router = useRouter();
@@ -50,6 +55,12 @@ export default function ApplicantsPage({ jobId }) {
   const [availableDocs, setAvailableDocs] = useState([]);
   const [selectedDocs, setSelectedDocs] = useState([]);
   const [offerLoading, setOfferLoading] = useState(false);
+  // Offer details form
+  const [offerRate, setOfferRate] = useState('');
+  const [offerCurrency, setOfferCurrency] = useState('USD');
+  const [offerContractType, setOfferContractType] = useState('');
+  const [offerStartDate, setOfferStartDate] = useState('');
+  const [offerNotes, setOfferNotes] = useState('');
 
   useEffect(() => {
     jobService.get(jobId).then((data) => setJob(data)).catch(() => {});
@@ -72,12 +83,16 @@ export default function ApplicantsPage({ jobId }) {
 
   const filtered = applicants.filter((a) => {
     const statusFilter = TAB_STATUS_MAP[tab];
-    return statusFilter === null || a.status === statusFilter;
+    if (statusFilter === null) return true;
+    if (Array.isArray(statusFilter)) return statusFilter.includes(a.status);
+    return a.status === statusFilter;
   });
 
   const counts = STATUS_TABS.reduce((acc, t) => {
     const s = TAB_STATUS_MAP[t];
-    acc[t] = s === null ? applicants.length : applicants.filter((a) => a.status === s).length;
+    if (s === null) { acc[t] = applicants.length; }
+    else if (Array.isArray(s)) { acc[t] = applicants.filter((a) => s.includes(a.status)).length; }
+    else { acc[t] = applicants.filter((a) => a.status === s).length; }
     return acc;
   }, {});
 
@@ -106,15 +121,27 @@ export default function ApplicantsPage({ jobId }) {
   const openOfferModal = (app) => {
     setOfferModal(app);
     setSelectedDocs([]);
+    setOfferRate('');
+    setOfferCurrency('USD');
+    setOfferContractType('');
+    setOfferStartDate('');
+    setOfferNotes('');
     if (availableDocs.length === 0) {
       documentService.list().then((d) => setAvailableDocs(Array.isArray(d) ? d : (d?.documents ?? []))).catch(() => {});
     }
   };
 
   const confirmOffer = async () => {
-    if (!offerModal) return;
+    if (!offerModal || !offerRate) return;
     setOfferLoading(true);
-    await updateStatus(offerModal.id, 'offer_sent', { documentIds: selectedDocs });
+    const offerDetails = {
+      rate: offerRate,
+      currency: offerCurrency,
+      contractType: offerContractType || undefined,
+      startDate: offerStartDate || undefined,
+      notes: offerNotes || undefined,
+    };
+    await updateStatus(offerModal.id, 'offer_sent', { documentIds: selectedDocs, offerDetails });
     setOfferLoading(false);
     setOfferModal(null);
     if (selected?.id === offerModal.id) setSelected(null);
@@ -300,7 +327,7 @@ export default function ApplicantsPage({ jobId }) {
         </div>
       )}
 
-      {/* ── Offer Document Modal ── */}
+      {/* ── Offer Modal ── */}
       {offerModal && (
         <div className={styles.modalOverlay} onClick={() => setOfferModal(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -309,13 +336,62 @@ export default function ApplicantsPage({ jobId }) {
               <button className={styles.modalClose} onClick={() => setOfferModal(null)}>✕</button>
             </div>
             <p className={styles.modalSub}>
-              Sending offer to <strong>{(offerModal.lecturer ?? offerModal).name}</strong> for <em>{job?.title}</em>
+              Offering <strong>{(offerModal.lecturer ?? offerModal).name}</strong> the <em>{job?.title}</em> position
             </p>
 
+            {/* ── Offer Details ── */}
             <div className={styles.modalSection}>
-              <p className={styles.modalSectionTitle}>Select Documents to Send (optional)</p>
+              <p className={styles.modalSectionTitle}>Offer Details *</p>
+              <div className={styles.offerRateRow}>
+                <div className={styles.offerRateField}>
+                  <label className={styles.modalLabel}>Monthly Rate *</label>
+                  <input
+                    className={styles.modalInput}
+                    type="number"
+                    placeholder="e.g. 3000"
+                    value={offerRate}
+                    onChange={(e) => setOfferRate(e.target.value)}
+                  />
+                </div>
+                <div className={styles.offerCurrencyField}>
+                  <label className={styles.modalLabel}>Currency</label>
+                  <select className={styles.modalInput} value={offerCurrency} onChange={(e) => setOfferCurrency(e.target.value)}>
+                    {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className={styles.modalField}>
+                <label className={styles.modalLabel}>Contract Type</label>
+                <select className={styles.modalInput} value={offerContractType} onChange={(e) => setOfferContractType(e.target.value)}>
+                  <option value="">Select…</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Adjunct">Adjunct</option>
+                  <option value="Visiting">Visiting</option>
+                </select>
+              </div>
+              <div className={styles.modalField}>
+                <label className={styles.modalLabel}>Proposed Start Date</label>
+                <input type="date" className={styles.modalInput} value={offerStartDate} onChange={(e) => setOfferStartDate(e.target.value)} />
+              </div>
+              <div className={styles.modalField}>
+                <label className={styles.modalLabel}>Additional Notes</label>
+                <textarea
+                  className={styles.modalInput}
+                  rows={3}
+                  placeholder="Any additional terms, conditions, or information…"
+                  value={offerNotes}
+                  onChange={(e) => setOfferNotes(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* ── Documents ── */}
+            <div className={styles.modalSection}>
+              <p className={styles.modalSectionTitle}>Contract Documents to Sign (optional)</p>
               {availableDocs.length === 0 && (
-                <p className={styles.modalEmpty}>No documents in your Doc Library yet. The offer email will still be sent.</p>
+                <p className={styles.modalEmpty}>No documents in your Doc Library yet.</p>
               )}
               {availableDocs.map((doc) => (
                 <label key={doc.id} className={`${styles.modalDocRow} ${selectedDocs.includes(doc.id) ? styles.modalDocSelected : ''}`}>
@@ -335,8 +411,8 @@ export default function ApplicantsPage({ jobId }) {
 
             <div className={styles.modalFooter}>
               <button className={styles.modalCancel} onClick={() => setOfferModal(null)}>Cancel</button>
-              <button className={styles.offerBtn} disabled={offerLoading} onClick={confirmOffer}>
-                {offerLoading ? 'Sending…' : `Send Offer${selectedDocs.length > 0 ? ` + ${selectedDocs.length} Doc${selectedDocs.length > 1 ? 's' : ''}` : ''}`}
+              <button className={styles.offerBtn} disabled={offerLoading || !offerRate} onClick={confirmOffer}>
+                {offerLoading ? 'Sending…' : 'Send Offer'}
               </button>
             </div>
           </div>
@@ -500,6 +576,46 @@ export default function ApplicantsPage({ jobId }) {
                     </DrawerSection>
                   )}
 
+                  {/* Application Details */}
+                  {(selected.coverNote || selected.phone || selected.qualification || selected.availability || selected.cvUrl) && (
+                    <DrawerSection
+                      title="Application Details"
+                      open={expandedSection === 'appdetails'}
+                      onToggle={() => setExpandedSection(expandedSection === 'appdetails' ? null : 'appdetails')}
+                    >
+                      {selected.phone && (
+                        <div className={styles.appDetailRow}>
+                          <span className={styles.appDetailLabel}>Phone</span>
+                          <span className={styles.appDetailValue}>{selected.phone}</span>
+                        </div>
+                      )}
+                      {selected.qualification && (
+                        <div className={styles.appDetailRow}>
+                          <span className={styles.appDetailLabel}>Qualification</span>
+                          <span className={styles.appDetailValue}>{selected.qualification}</span>
+                        </div>
+                      )}
+                      {selected.availability && (
+                        <div className={styles.appDetailRow}>
+                          <span className={styles.appDetailLabel}>Availability</span>
+                          <span className={styles.appDetailValue}>{selected.availability}</span>
+                        </div>
+                      )}
+                      {selected.cvUrl && (
+                        <div className={styles.appDetailRow}>
+                          <span className={styles.appDetailLabel}>CV / Resume</span>
+                          <a href={selected.cvUrl} target="_blank" rel="noopener noreferrer" className={styles.appDetailLink}>View CV →</a>
+                        </div>
+                      )}
+                      {selected.coverNote && (
+                        <div className={styles.appDetailCoverNote}>
+                          <span className={styles.appDetailLabel}>Why a good fit</span>
+                          <p className={styles.appDetailCoverText}>{selected.coverNote}</p>
+                        </div>
+                      )}
+                    </DrawerSection>
+                  )}
+
                   {/* Interview details */}
                   {selected.status === 'interview_scheduled' && (
                     <div className={styles.interviewBox}>
@@ -520,19 +636,29 @@ export default function ApplicantsPage({ jobId }) {
                   )}
 
                   {/* Offer details */}
-                  {selected.status === 'offer_sent' && (
-                    <div className={styles.offerBox}>
-                      <p className={styles.interviewBoxTitle}>✅ Offer Sent</p>
-                      {selected.appliedAt && (
-                        <p className={styles.interviewBoxRow}>
-                          Sent {new Date(selected.appliedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  {(selected.status === 'offer_sent' || selected.status === 'offer_accepted') && (() => {
+                    const od = selected.offerDetails ?? {};
+                    return (
+                      <div className={styles.offerBox}>
+                        <p className={styles.interviewBoxTitle}>
+                          {selected.status === 'offer_accepted' ? '✅ Offer Accepted — Awaiting Signature' : '📨 Offer Sent — Awaiting Response'}
                         </p>
-                      )}
-                      {Array.isArray(selected.sentDocumentIds) && selected.sentDocumentIds.length > 0 && (
-                        <p className={styles.interviewBoxNote}>
-                          {selected.sentDocumentIds.length} document{selected.sentDocumentIds.length > 1 ? 's' : ''} sent
-                        </p>
-                      )}
+                        {od.rate && <p className={styles.interviewBoxRow}>{od.currency ?? ''} {Number(od.rate).toLocaleString()} / month</p>}
+                        {od.contractType && <p className={styles.interviewBoxRow}>{od.contractType}</p>}
+                        {od.startDate && <p className={styles.interviewBoxRow}>Start: {new Date(od.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>}
+                        {od.notes && <p className={styles.interviewBoxNote}>{od.notes}</p>}
+                        {Array.isArray(selected.sentDocumentIds) && selected.sentDocumentIds.length > 0 && (
+                          <p className={styles.interviewBoxNote}>{selected.sentDocumentIds.length} contract document{selected.sentDocumentIds.length > 1 ? 's' : ''} attached</p>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Hired */}
+                  {selected.status === 'hired' && (
+                    <div className={styles.hiredBox}>
+                      <p className={styles.hiredBoxTitle}>🎉 Hired!</p>
+                      <p className={styles.hiredBoxSub}>All documents have been signed. This lecturer is officially hired.</p>
                     </div>
                   )}
 

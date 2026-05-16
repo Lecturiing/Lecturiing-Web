@@ -17,11 +17,11 @@ const ACTIVITY_ICONS = {
 };
 
 const DEFAULT_STATS = {
-  institutions: { total: 0, active: 0, suspended: 0 },
-  lecturers: { total: 0, active: 0 },
-  jobs: { active: 0, filled: 0 },
-  revenue: { thisMonth: 0, growth: 0 },
-  contracts: { active: 0 },
+  institutions:  { total: 0, active: 0, suspended: 0 },
+  lecturers:     { total: 0, active: 0 },
+  jobs:          { active: 0, filled: 0 },
+  revenue:       { thisMonth: 0, lastMonth: 0, growth: 0, allTime: 0, reimbursementThisMonth: 0, escrowThisMonth: 0 },
+  contracts:     { active: 0 },
   verifications: { pending: 0, approved: 0, rejected: 0 },
 };
 
@@ -105,12 +105,23 @@ export default function OverviewPage() {
             </svg>
           </div>
           <div className={styles.statContent}>
-            <p className={styles.statLabel}>Revenue (This Month)</p>
-            <p className={styles.statValue}>${(stats.revenue.thisMonth / 1000).toFixed(1)}k</p>
+            <p className={styles.statLabel}>Commission (This Month)</p>
+            <p className={styles.statValue}>
+              ${stats.revenue.thisMonth >= 1000
+                ? (stats.revenue.thisMonth / 1000).toFixed(1) + 'k'
+                : stats.revenue.thisMonth.toFixed(2)}
+            </p>
             <p className={styles.statMeta}>
-              <span className={styles.statGrowth}>
-                ↑ {stats.revenue.growth}% vs last month
-              </span>
+              {stats.revenue.growth !== 0 && (
+                <span className={stats.revenue.growth >= 0 ? styles.statGrowth : styles.statSuspended}>
+                  {stats.revenue.growth >= 0 ? '↑' : '↓'} {Math.abs(stats.revenue.growth)}% vs last month
+                </span>
+              )}
+              {stats.revenue.reimbursementThisMonth > 0 && (
+                <span style={{ color: '#6b7280', marginLeft: stats.revenue.growth !== 0 ? 8 : 0 }}>
+                  · ${stats.revenue.reimbursementThisMonth.toFixed(2)} reimbursement
+                </span>
+              )}
             </p>
           </div>
         </div>

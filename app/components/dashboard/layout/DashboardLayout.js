@@ -7,12 +7,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import logo from '@/app/assets/Frame 36712.png';
 import styles from './DashboardLayout.module.css';
+import WalletPanel from './WalletPanel';
 
 const NAV = [
   { href: '/dashboard', label: 'Overview', icon: HomeIcon, exact: true },
   { href: '/dashboard/profile', label: 'Profile', icon: UserIcon },
+  { href: '/dashboard/browse', label: 'Browse Jobs', icon: SearchNavIcon },
+  { href: '/dashboard/subscription', label: 'Subscription', icon: StarIcon },
   { href: '/dashboard/jobs', label: 'Job Postings', icon: BriefcaseIcon },
-  { href: '/dashboard/shortlist', label: 'Shortlist', icon: StarIcon },
+  { href: '/dashboard/shortlist', label: 'Shortlist', icon: ShortlistIcon },
   { href: '/dashboard/pipeline', label: 'Pipeline', icon: PipelineIcon },
   { href: '/dashboard/contracts', label: 'Contracts', icon: DocumentIcon },
   { href: '/dashboard/offers', label: 'Offers', icon: OfferIcon },
@@ -21,6 +24,7 @@ const NAV = [
   { href: '/dashboard/performance', label: 'Performance', icon: ChartIcon },
   { href: '/dashboard/verification', label: 'Verification', icon: ShieldIcon },
   { href: '/dashboard/notifications', label: 'Notifications', icon: BellNavIcon },
+  { href: '/dashboard/wallet', label: 'Wallet', icon: WalletNavIcon },
 ];
 
 export default function DashboardLayout({ children }) {
@@ -114,6 +118,7 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <div className={styles.sidebarBottom}>
+          <WalletPanel collapsed={collapsed} />
           <button
             className={styles.collapseBtn}
             onClick={() => setCollapsed((v) => !v)}
@@ -289,4 +294,13 @@ function ChevronIcon({ flipped }) {
 }
 function UserIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+}
+function WalletNavIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 14a2 2 0 100-4 2 2 0 000 4z"/><path d="M22 10V6a2 2 0 00-2-2H4a2 2 0 00-2 2v4"/></svg>;
+}
+function SearchNavIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+}
+function ShortlistIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>;
 }

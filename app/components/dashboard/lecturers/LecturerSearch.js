@@ -127,7 +127,10 @@ export default function LecturerSearch() {
               <div className={styles.cardTop}>
                 <div className={styles.avatar} style={{ background: l.avatarColor ?? l.color }}>{l.initials}</div>
                 <div className={styles.cardInfo}>
-                  <h3 className={styles.cardName}>{l.name}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <h3 className={styles.cardName}>{l.name}</h3>
+                    {l.plan && l.plan !== 'free' && <PlanBadge plan={l.plan} />}
+                  </div>
                   <p className={styles.cardTitle}>{l.title}</p>
                 </div>
               </div>
@@ -196,6 +199,20 @@ export default function LecturerSearch() {
         </div>
       )}
     </div>
+  );
+}
+
+function PlanBadge({ plan }) {
+  const map = {
+    premium: { label: 'Premium', bg: '#fef3c7', color: '#d97706' },
+    pro: { label: 'Pro', bg: '#ede9fe', color: '#7c3aed' },
+  };
+  const s = map[plan];
+  if (!s) return null;
+  return (
+    <span style={{ background: s.bg, color: s.color, fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
+      {s.label}
+    </span>
   );
 }
 

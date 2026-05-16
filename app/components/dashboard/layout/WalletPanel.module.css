@@ -1,0 +1,188 @@
+.panel {
+  margin: 0 8px 12px;
+  padding: 14px;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  flex: 1;
+  white-space: nowrap;
+}
+
+.eyeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.eyeBtn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.balanceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.balanceLabel {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.balance {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pendingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 6px;
+}
+
+.pendingLabel {
+  font-size: 0.7rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.pendingValue {
+  font-size: 0.7rem;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.fundForm {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 6px;
+}
+
+.fundInput {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.78rem;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
+.fundInput::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.fundInput:focus {
+  border-color: rgba(167, 139, 250, 0.6);
+}
+
+/* Chrome number input arrows removal */
+.fundInput::-webkit-outer-spin-button,
+.fundInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.fundBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+
+.fundBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 0.72rem;
+  color: #f87171;
+  margin: 0;
+}
+
+.viewAllBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a78bfa;
+  text-align: left;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.viewAllBtn:hover {
+  color: #c4b5fd;
+}
+
+/* Collapsed icon button */
+.collapsedBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(139, 92, 246, 0.2);
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  transition: background 0.15s;
+  margin: 0 auto 8px;
+}
+
+.collapsedBtn:hover {
+  background: rgba(139, 92, 246, 0.35);
+  color: #fff;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
