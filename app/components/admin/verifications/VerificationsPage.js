@@ -323,6 +323,37 @@ export default function VerificationsPage() {
               </div>
             )}
 
+            {/* Additional Info */}
+            {(selectedInstitution.website || selectedInstitution.linkedIn || selectedInstitution.verificationNotes) && (
+              <div className={styles.detailSection}>
+                <p className={styles.sectionLabel}>Additional Information</p>
+                <div className={styles.contactGrid}>
+                  {selectedInstitution.website && (
+                    <div className={styles.contactItem}>
+                      <span className={styles.contactLabel}>Website</span>
+                      <a href={selectedInstitution.website} target="_blank" rel="noreferrer" className={styles.contactLink}>
+                        {selectedInstitution.website}
+                      </a>
+                    </div>
+                  )}
+                  {selectedInstitution.linkedIn && (
+                    <div className={styles.contactItem}>
+                      <span className={styles.contactLabel}>LinkedIn</span>
+                      <a href={selectedInstitution.linkedIn} target="_blank" rel="noreferrer" className={styles.contactLink}>
+                        {selectedInstitution.linkedIn}
+                      </a>
+                    </div>
+                  )}
+                  {selectedInstitution.verificationNotes && (
+                    <div className={styles.contactItem} style={{ gridColumn: '1 / -1' }}>
+                      <span className={styles.contactLabel}>Notes</span>
+                      <span className={styles.contactValue}>{selectedInstitution.verificationNotes}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Documents */}
             <div className={styles.detailSection}>
               <p className={styles.sectionLabel}>Submitted Documents</p>
