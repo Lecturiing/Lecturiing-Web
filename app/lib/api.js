@@ -29,7 +29,7 @@ async function refreshAccessToken() {
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     const isAuthPage = AUTH_FLOW_PAGES.includes(pathname) || pathname.startsWith('/auth/');
     if (!isAuthPage) {
-      window.location.href = '/';
+      // window.location.href = '/';
     }
     return null;
   }

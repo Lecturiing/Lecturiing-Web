@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { notificationService } from '@/app/lib/services/notificationService';
+import api from '@/app/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import logo from '@/app/assets/Frame 36712.png';
@@ -27,10 +28,14 @@ const NAV = [
   { href: '/dashboard/wallet', label: 'Wallet', icon: WalletNavIcon },
 ];
 
+// Pages accessible even when unverified
+const UNVERIFIED_ALLOWED = ['/dashboard/profile', '/dashboard/verification'];
+
 export default function DashboardLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [verificationStatus, setVerificationStatus] = useState(null); // null = loading
   const pathname = usePathname();
   const router = useRouter();
   const notifRef = useRef(null);
@@ -42,6 +47,13 @@ export default function DashboardLayout({ children }) {
     notificationService.list({ pageSize: 10 })
       .then((data) => setNotifications(data?.notifications ?? []))
       .catch(() => {});
+  }, []);
+
+  // Check verification status on mount
+  useEffect(() => {
+    api.get('/api/profile')
+      .then((data) => setVerificationStatus(data?.verificationStatus ?? 'pending'))
+      .catch(() => setVerificationStatus('pending'));
   }, []);
 
   // Close dropdown on outside click
@@ -80,6 +92,60 @@ export default function DashboardLayout({ children }) {
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
   const pageLabel = NAV.find((i) => active(i))?.label ?? 'Dashboard';
+
+  // Show loading spinner while checking verification
+  if (verificationStatus === null) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#fff' }}>
+        <div style={{ width: 40, height: 40, border: '3px solid #e5e7eb', borderTopColor: '#0ea5e9', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // Block unverified institutions — allow only profile & verification pages
+  const isVerified = verificationStatus === 'verified';
+  const isAllowedPath = UNVERIFIED_ALLOWED.some((p) => pathname.startsWith(p));
+
+  if (!isVerified && !isAllowedPath) {
+    const isRejected = verificationStatus === 'failed';
+    const isInReview = verificationStatus === 'in_review';
+    return (
+      <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ background: '#fff', borderRadius: 16, padding: '48px 40px', maxWidth: 480, width: '100%', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: isRejected ? '#fee2e2' : isInReview ? '#fef3c7' : '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            {isRejected
+              ? <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              : isInReview
+              ? <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+              : <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            }
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: 22, fontWeight: 700, color: '#0f172a', margin: '0 0 12px' }}>
+            {isRejected ? 'Verification Rejected' : isInReview ? 'Under Review' : 'Verification Required'}
+          </h2>
+          <p style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: 14, color: '#64748b', lineHeight: 1.7, margin: '0 0 32px' }}>
+            {isRejected
+              ? 'Your verification was not approved. Please update your profile and resubmit for review.'
+              : isInReview
+              ? 'Your profile is currently being reviewed by our team. You\'ll be notified once approved.'
+              : 'Complete your profile and submit your verification documents to access the full dashboard.'}
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Link href="/dashboard/verification" style={{ display: 'block', padding: '14px 24px', background: '#0ea5e9', color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-montserrat, sans-serif)' }}>
+              {isRejected ? 'Resubmit Verification' : 'Go to Verification'}
+            </Link>
+            <Link href="/dashboard/profile" style={{ display: 'block', padding: '14px 24px', border: '1.5px solid #0ea5e9', color: '#0ea5e9', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 15, fontFamily: 'var(--font-montserrat, sans-serif)' }}>
+              Complete Profile
+            </Link>
+            <button onClick={handleSignOut} style={{ padding: '10px 24px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontWeight: 600, fontSize: 14, fontFamily: 'var(--font-montserrat, sans-serif)' }}>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.shell} ${collapsed ? styles.collapsed : ''}`}>
