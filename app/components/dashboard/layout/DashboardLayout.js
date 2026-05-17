@@ -13,7 +13,6 @@ import WalletPanel from './WalletPanel';
 const NAV = [
   { href: '/dashboard', label: 'Overview', icon: HomeIcon, exact: true },
   { href: '/dashboard/profile', label: 'Profile', icon: UserIcon },
-  { href: '/dashboard/browse', label: 'Browse Jobs', icon: SearchNavIcon },
   // { href: '/dashboard/subscription', label: 'Subscription', icon: StarIcon },
   { href: '/dashboard/jobs', label: 'Job Postings', icon: BriefcaseIcon },
   { href: '/dashboard/shortlist', label: 'Shortlist', icon: ShortlistIcon },
