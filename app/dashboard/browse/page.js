@@ -5,8 +5,8 @@ export const metadata = { title: 'Browse Jobs — Lecturiing' };
 
 export default function BrowsePage() {
   return (
-    <DashboardLayout>
+    // <DashboardLayout>
       <BrowseJobsPage />
-    </DashboardLayout>
+    // </DashboardLayout>
   );
 }
